@@ -44,8 +44,8 @@ spec:
     grafana:
       admin:
         existingSecret: grafana-admin
-        userKey: admin-user
-        passwordKey: admin-password
+        userKey: user
+        passwordKey: password
       service:
         type: ClusterIP
       defaultDashboardsEnabled: true 
