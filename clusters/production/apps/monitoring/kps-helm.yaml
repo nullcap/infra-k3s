@@ -2,7 +2,7 @@ apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
   name: prometheus-community
-  namespace: flux-system
+  namespace: monitoring
 spec:
   interval: 10m
   url: https://prometheus-community.github.io/helm-charts
@@ -48,7 +48,7 @@ spec:
         passwordKey: password
       service:
         type: ClusterIP
-      defaultDashboardsEnabled: true 
+      defaultDashboardsEnabled: true
       sidecar:
         dashboards:
           enabled: true
@@ -80,7 +80,31 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: prometheus-community
-        namespace: flux-system
+        namespace: monitoring
   values:
     prometheus:
       url: "http://kube-prometheus-stack-prometheus.monitoring"
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: loki
+  namespace: monitoring
+spec:
+  interval: 10m
+  chart:
+    spec:
+      chart: loki-stack
+      version: "*"  # Specify a version if needed
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+        namespace: monitoring
+  values:
+    loki:
+      persistence:
+        existingClaim: kube-prometheus-stack-pvc
+    admin:
+      existingSecret: loki-admin
+      userKey: user
+      passwordKey: password
