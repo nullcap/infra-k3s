@@ -94,7 +94,7 @@ spec:
   interval: 10m
   chart:
     spec:
-      chart: loki-stack
+      chart: loki
       version: "*"  # Specify a version if needed
       sourceRef:
         kind: HelmRepository
@@ -102,8 +102,15 @@ spec:
         namespace: monitoring
   values:
     loki:
+      enabled: true
       persistence:
+        enabled: true
         existingClaim: kube-prometheus-stack-pvc
+      storageConfig:
+        boltdb_shipper:
+          active_index_directory: /var/loki/index
+          cache_location: /var/loki/cache
+          shared_store: filesystem
     admin:
       existingSecret: loki-admin
       userKey: user
