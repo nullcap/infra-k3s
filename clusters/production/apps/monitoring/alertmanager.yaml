@@ -1,0 +1,71 @@
+# Custom Resource Definition (CRD) for configuring Alertmanager.
+# This defines routing, receivers, and inhibition rules for handling alerts.
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: alertmanager-config
+  namespace: monitoring
+spec:
+# This is the top-level route, which defines how alerts are handled.
+# All alerts are routed to the "default" receiver unless a more specific rule matches.
+  route:  
+    receiver: "default"
+    groupBy: ['alertname', 'severity']
+    groupWait: 10s
+    groupInterval: 5m
+    repeatInterval: 3h
+    routes:
+      - matchers:
+# This alert acts as a suppression mechanism.
+# It is sent to the "null" receiver to prevent unnecessary noise in Slack.
+# per the alert itself: "# This alert should be routed to a null receiver and configured to inhibit alerts with severity="info"."
+          - name: alertname
+            value: InfoInhibitor 
+        receiver: "null"
+
+ # List of alert receivers. Each receiver defines a way to process incoming alerts.
+  # - "default": Sends alerts to Slack.
+  # - "null": A placeholder receiver that discards alerts (used for inhibition).
+  receivers: 
+    - name: "default"
+      slackConfigs:
+        - sendResolved: true  # Notify Slack when alerts are resolved.
+          apiURL:
+            key: slack_api_url
+            name: alertmanager-slack-secret  # Slack webhook URL stored in a Kubernetes Secret.
+          channel: "#webapp-alerts"  # Destination Slack channel.
+          title: "{{ .CommonAnnotations.summary }}"  # Alert title.
+          text: "{{ .CommonAnnotations.description }}"  # Detailed alert message.
+
+    - name: "null"
+
+# Inhibition prevents redundant alerts from being sent when a higher severity alert is active.
+# If an alert from "sourceMatch" exists, then alerts in "targetMatch" will be suppressed.
+  inhibitRules:
+    - sourceMatch:  # If "InfoInhibitor" alert is firing, all alerts with severity="info" will be suppressed.
+        - name: alertname
+          value: InfoInhibitor
+      targetMatch:
+        - name: severity
+          value: info
+      equal:
+        - alertname
+        - namespace
+    - sourceMatch:  # If a critical alert is active, info-level alerts will be suppressed.
+        - name: severity
+          value: critical
+      targetMatch:
+        - name: severity
+          value: info
+      equal:
+        - alertname
+        - namespace
+    - sourceMatch:  # If a warning alert is active, info-level alerts will be suppressed.
+        - name: severity
+          value: warning
+      targetMatch:
+        - name: severity
+          value: info
+      equal:
+        - alertname
+        - namespace
