@@ -48,9 +48,7 @@ spec:
         passwordKey: admin-password
       service:
         type: ClusterIP
-      defaultDashboardsEnabled: true
-      dashboardsConfigMaps:
-        default: nginx-dash
+      defaultDashboardsEnabled: true 
       sidecar:
         dashboards:
           enabled: true
