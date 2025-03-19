@@ -32,7 +32,6 @@ spec:
             release: prometheus-stack
         serviceMonitorSelectorNilUsesHelmValues: false
         serviceMonitorNamespaceSelector: {}
-        serviceMonitorSelector: {}
         podMonitorNamespaceSelector: {}
         podMonitorSelector: {}
         ruleNamespaceSelector: {}
@@ -50,6 +49,8 @@ spec:
       service:
         type: ClusterIP
       defaultDashboardsEnabled: true
+      dashboardsConfigMaps:
+        default: nginx-dash
       sidecar:
         dashboards:
           enabled: true
