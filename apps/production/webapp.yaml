@@ -1,0 +1,263 @@
+## NGINX App (Requirements 1a -  Deploy an Nginx-based web application on a Kubernetes cluster.)
+apiVersion: apps/v1
+kind: Deployment ## (Requirements 1a-1 - Use a Deployment or StatefulSet to manage the app.)
+metadata:
+  name: nginx-web-app
+  namespace: prodapps
+  labels:
+    app: nginx-web-app
+spec:
+  selector:
+    matchLabels:
+      app: nginx-web-app
+  template:
+    metadata:
+      labels:
+        app: nginx-web-app
+    spec:
+## AntiAffinity helps us to ensure replicas are spread out between the nodes. 
+## preferredDuringSchedulingIgnoredDuringExecution allows a bit of flexibility in the event 
+## that we need to scale beyond the max number of nodes.
+## Cloud-based clusters should consider configuring affinity across availability zones as well. 
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - nginx-web-app
+              topologyKey: "kubernetes.io/hostname"
+## We use the nginx image from trusted sources, then build on-top.
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+## Set some reasonable requests/limits
+        resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "1"
+              memory: "500Mi"
+## These volumes mount configmaps from below, which house nginx configuration and the index.html site.  
+        volumeMounts:
+        - name: html-volume
+          mountPath: /usr/share/nginx/html
+        - name: nginx-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+## Liveness and readiness probes 
+## (Requirements 2a - Add liveness and readiness probes to your Kubernetes setup.)
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 3
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 3
+          periodSeconds: 5
+## nginx-prometheus-exporter sidecar pulls metrics from the pod for horizontal auto-scaling
+      - name: nginx-prometheus-exporter
+        image: nginx/nginx-prometheus-exporter:latest
+        args:
+          - "-nginx.scrape-uri=http://localhost:80/stub_status"
+        ports:
+        - containerPort: 9113
+## Volumes to store data
+      volumes:
+      - name: html-volume
+        configMap:
+          name: nginx-html-configmap
+      - name: nginx-config
+        configMap:
+          name: nginx-config
+---
+## This configmap houses the basic website. 
+## (Requirements 1a-3 - The application should serve a basic static page (index.html).)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-html-configmap
+  namespace: prodapps
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Simple Web App</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                text-align: center;
+                margin: 50px;
+            }
+            #time {
+                font-size: 1.5em;
+                margin-top: 20px;
+            }
+        </style>
+        <script>
+            function updateTime() {
+                const now = new Date();
+                document.getElementById("time").textContent = now.toLocaleTimeString();
+            }
+            setInterval(updateTime, 1000);
+            window.onload = updateTime;
+        </script>
+    </head>
+    <body>
+        <h1>Welcome to the Simple Web App</h1>
+        <p>This page displays the current time.</p>
+        <div id="time"></div>
+    </body>
+    </html>
+---
+## This configmap houses nginx config. We need this to enable /stub_status
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: prodapps
+data:
+  nginx.conf: |
+    worker_processes  1;
+
+    events {
+        worker_connections  1024;
+    }
+
+    http {
+        server {
+            listen 80;
+
+            location / {
+                root /usr/share/nginx/html;
+                index index.html;
+            }
+
+            location /stub_status {
+                stub_status;
+                allow 127.0.0.1;
+                deny all;
+            }
+        }
+    }
+---
+## Configure internal service access
+## (Requirements 1a-2 - Expose it with a Service and Ingress)
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-web-app-service
+  namespace: prodapps
+  labels:
+    app: nginx-web-app
+spec:
+  selector:
+    app: nginx-web-app
+  ports:
+## This service port exposes the webapp for ingress
+    - name: webapp-http
+      protocol: TCP
+      port: 80
+      targetPort: 80
+## This service port exposes Prometheus metrics via /metrics for monitoring.
+    - name: webapp-metrics
+      protocol: TCP
+      port: 9113
+      targetPort: 9113
+  type: ClusterIP
+---
+## Configure the ingress (k3s will default to traefik)
+## (Requirements 1a-2 Expose it with a Service and Ingress)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-web-app-ingress
+  namespace: prodapps
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  rules:
+## Since we are not configuring DNS, clients must add webapp.local to their hosts file. 
+  - host: webapp.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-web-app-service
+            port:
+              number: 80
+---
+## Request load horizontal autoscaling
+## Before you can deploy this, you must install the prometheus adapter:
+# helm repo add prometheus-community https://prometheus-community.github.io/helm-charts && helm repo update && helm install prometheus-adapter prometheus-community/prometheus-adapter
+## After deploying, you can check the metrics with
+# kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1" | jq .
+## (Requirements part 2b - Implement horizontal auto-scaling based on CPU or request load.)
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: nginx-web-app-hpa
+  namespace: prodapps
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: nginx-web-app
+  minReplicas: 2 # Scale as low as 2 instances, for at least some level of immediate HA 
+  maxReplicas: 5 # We can take this beyond the max number of nodes (3) thanks to the flexible AntiAffinity config above
+  metrics:
+## Define Scaling behavior
+  - type: Pods
+    pods:
+      metric:
+        name: nginx_connections_active  # We could use a different metric here if needed. 
+      target:
+        type: AverageValue
+        averageValue: "10"  # Average of 10 connections per pod. 
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 10 # Aggressively scale up (every 10 sec)
+      policies:
+        - type: Percent
+          value: 100  # Double the number of nodes
+          periodSeconds: 15  
+    scaleDown:
+      stabilizationWindowSeconds: 30  # Slowly scale down (every 30 sec)
+      policies:
+        - type: Percent
+          value: 50  # Remove half of the all nodes
+          periodSeconds: 30  
+---
+## This ServiceMonitor ensures Prometheus scrapes metrics from the Nginx exporter.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: nginx-service-monitor
+  namespace: prodapps
+  labels:
+    release: prometheus-stack
+spec:
+  selector:
+    matchLabels:
+      app: nginx-web-app
+  endpoints:
+    - port: webapp-metrics
+      interval: 10s
+      path: /metrics
+
