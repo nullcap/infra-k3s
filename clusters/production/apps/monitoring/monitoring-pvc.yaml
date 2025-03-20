@@ -7,7 +7,7 @@ spec:
   capacity:
     storage: 100Gi
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   storageClassName: ""
   nfs:
     path: /volume1/Data/docker/kube-prometheus-stack
@@ -21,7 +21,7 @@ metadata:
   namespace: monitoring
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
       storage: 100Gi
