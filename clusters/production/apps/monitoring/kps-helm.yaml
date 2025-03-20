@@ -59,9 +59,6 @@ spec:
           - job_name: 'kubernetes-ingresses'
             kubernetes_sd_configs:
               - role: ingress
-          - job_name: 'kubernetes-cadvisor'
-            kubernetes_sd_configs:
-              - role: cadvisor
           - job_name: 'kubernetes-api-server'
             kubernetes_sd_configs:
               - role: apiserver
