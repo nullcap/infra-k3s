@@ -56,6 +56,9 @@ spec:
           - job_name: 'kubernetes-nodes'
             kubernetes_sd_configs:
               - role: node
+            tls_config:
+              insecure_skip_verify: true
+            bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
           - job_name: 'kubernetes-ingresses'
             kubernetes_sd_configs:
               - role: ingress
