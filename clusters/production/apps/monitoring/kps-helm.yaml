@@ -49,6 +49,10 @@ spec:
             - { key: release, operator: Exists }
       persistentVolume:
         existingClaim: kube-prometheus-stack-pvc
+      enableAdminAPI: true
+      enableFeatureGates:
+        - default
+        - remote-write-receiver
     
     grafana:
       admin:
