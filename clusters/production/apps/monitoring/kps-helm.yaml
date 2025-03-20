@@ -53,6 +53,15 @@ spec:
       enableFeatureGates:
         - default
         - remote-write-receiver
+      serviceMonitor:
+        enabled: true
+      podMonitor:
+        enabled: true
+      ruleEvaluationInterval: "30s"
+      ruleSelectorNilUsesHelmValues: false
+      ruleSelector:
+        matchLabels:
+          prometheus: kube-prometheus-stack
     
     grafana:
       admin:
