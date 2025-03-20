@@ -53,6 +53,18 @@ spec:
           - job_name: 'kubernetes-pods'
             kubernetes_sd_configs:
               - role: pod
+          - job_name: 'kubernetes-nodes'
+            kubernetes_sd_configs:
+              - role: node
+          - job_name: 'kubernetes-ingresses'
+            kubernetes_sd_configs:
+              - role: ingress
+          - job_name: 'kubernetes-cadvisor'
+            kubernetes_sd_configs:
+              - role: cadvisor
+          - job_name: 'kubernetes-api-server'
+            kubernetes_sd_configs:
+              - role: apiserver
       persistentVolume:
         existingClaim: kube-prometheus-stack-pvc
       enableAdminAPI: true
