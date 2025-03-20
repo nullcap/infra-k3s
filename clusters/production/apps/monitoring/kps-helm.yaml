@@ -46,6 +46,13 @@ spec:
         ruleNamespaceSelector: {}
         scrapeConfigSelector: {}
         scrapeConfigNamespaceSelector: {}
+        additionalScrapeConfigs:
+          - job_name: 'kubernetes-service-endpoints'
+            kubernetes_sd_configs:
+              - role: endpoints
+          - job_name: 'kubernetes-pods'
+            kubernetes_sd_configs:
+              - role: pod
       persistentVolume:
         existingClaim: kube-prometheus-stack-pvc
       enableAdminAPI: true
