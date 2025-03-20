@@ -44,9 +44,6 @@ spec:
         podMonitorNamespaceSelector: {}
         podMonitorSelector: {}
         ruleNamespaceSelector: {}
-        ruleSelector:
-          matchExpressions:
-            - { key: release, operator: Exists }
         scrapeConfigSelector: {}
         scrapeConfigNamespaceSelector: {}
       persistentVolume:
