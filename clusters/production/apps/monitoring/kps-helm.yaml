@@ -71,7 +71,7 @@ spec:
           datasources:
             - name: Prometheus
               type: prometheus
-              url: "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local"
+              url: "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090"
               access: proxy
               isDefault: true
             - name: Loki
