@@ -46,7 +46,7 @@ spec:
         scrapeConfigSelector: {}
         scrapeConfigNamespaceSelector: {}
       persistentVolume:
-        existingClaim: kube-prometheus-stack-pvc
+        existingClaim: prometheus-pvc
       enableAdminAPI: true
       enableFeatureGates:
         - default
@@ -70,7 +70,7 @@ spec:
           enabled: true
           label: grafana_datasource
       persistentVolume:
-        existingClaim: kube-prometheus-stack-pvc
+        existingClaim: grafana-pvc
       datasources:
         datasources.yaml:
           apiVersion: 1
@@ -93,7 +93,7 @@ spec:
           name: alertmanager-config
         logFormat: json
       persistentVolume:
-        existingClaim: kube-prometheus-stack-pvc
+        existingClaim: alertmanager-pvc
       config:
         enabled: true
         name: alertmanager-config
