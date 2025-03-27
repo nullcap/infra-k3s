@@ -60,6 +60,12 @@ spec:
         passwordKey: password
       service:
         type: ClusterIP
+      ingress:
+        enabled: true
+        annotations:
+          traefik.ingress.kubernetes.io/router.entrypoints: web
+        hosts:
+          - grafana.local
       defaultDashboardsEnabled: true
       sidecar:
         dashboards:
