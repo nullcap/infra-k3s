@@ -32,7 +32,7 @@ spec:
         - sendResolved: true  # Notify Slack when alerts are resolved.
           apiURL:
             key: slack_api_url
-            name: alertmanager-slack-secret  # Slack webhook URL stored in a Kubernetes Secret.
+            name: slack-api-url  # Slack webhook URL stored in a Kubernetes Secret.
           channel: "#webapp-alerts"  # Destination Slack channel.
           title: "{{ .CommonAnnotations.summary }}"  # Alert title.
           text: "{{ .CommonAnnotations.description }}"  # Detailed alert message.
