@@ -4,7 +4,7 @@ kind: SealedSecret
 metadata:
   creationTimestamp: null
   name: loki-admin
-  namespace: default
+  namespace: monitoring
 spec:
   encryptedData:
     password: AgAMAyHybK2vvJNkvXDqN+xnXT3FkZjgSgF92DWa6gTew2LYIm1+0G3XtCegbq6h7wjw5VEDT003hh/l0VvtSJChm/pBR9bH1j8Rhgum0skWKSk9AsKB1U4e63L/2kER7U7GNljE4uqz5dD/oQSFNMsJ5Mw7Mpbdsw8CUFJDxAz+TSlWdcsU9AYQJ33psEdABX9IGUhzzPYpG2ajD+NS7vgJkTsf0iiJzQTWQLmGumPOOPhpQ856pZdk1pQzQQ7k7F6B+z97eUNBPzK95w7cRpjBfS96v4ABKr+QSgkdi2xefRPnLam1UffMajZI0T6mXNQQgrUS0YT/oGa2mtwugxwXNMf3eCqjMYd+jbku1cN1N3RAApXMPYtlHlJr1mj7RDKduTgj4snR4pWXZ/zz6JKB0O5qPj2/+LOebnUVcuscdncuywFtZQu107dXRmieTg2NE8GcaklXW0zao/71eXvbvoLs42vS8AOERNtATJ3nstju9dS7F/C3BpoEo1SGb4l+TIThaKdi94Qel8VzhGd/Zpb0WXmLUVaZ3SyljKaAkNGT6yGJVOT5Sxqdn7WbVPFmPmwlqwrJsoOXhL/7YYv+hDLIyjA/P+Eozv+o8hqx7lnTcc1ozRmcO2zrjbzm7zeUULp/CD1i7MIx5zQkfk+J4zvoWqCUcVvhgBftqRRprjTA8TqqKd0Nxxuzi1AAVmhrBVkVR0Inqq6o99Hp0ZN4
@@ -13,4 +13,4 @@ spec:
     metadata:
       creationTimestamp: null
       name: loki-admin
-      namespace: default
+      namespace: monitoring

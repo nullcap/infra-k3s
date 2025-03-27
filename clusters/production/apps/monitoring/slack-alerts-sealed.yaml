@@ -4,7 +4,7 @@ kind: SealedSecret
 metadata:
   creationTimestamp: null
   name: slack-api-url
-  namespace: default
+  namespace: monitoring
 spec:
   encryptedData:
     slack_api_url: AgC5KNxcORE7p8ptl1LL4i/7V5VVb+yV0g0ZKEy8My9gyDiD1wgvzwuPkAtlj/m4fGHv+UZxoazecvn81I0NPCnJUMc2i2HfEODb7q9EbKMciavdpNZQMvYgA54owzs1OC0zxa1S/BPvjPacwdf1k3OuLA/tZZjB0ZifNoD8tAeL2i/ymt+sAvvAaUEKY2K3lxwJjNNpRW6WtCIH9NyApVcTT3B5zuLPiBAiuN/0Nw7z0PVsLFrOA6T4e1uSN5mGG2Dy+j1TWU1hF9VE1Tour3PtHYEBVkNQNFA/Y2viyDa4RwRO4gdV7adJfgU92/tWJZbC0SVEnBG0VriEiL/ihxBIewlWLdPmVeUkyL1qCI+hs7bpw5WclvNN+5O5G8sZ99xcdO54Kan1iBSDk6mUNLEZpBIdI2OgzKVqQFUqAFEgKZXmITc3jYF+sm82oQJ/H0KuYvDVdibLAOtG2LvS7fo0PPyOgzWAFKGSXy1usVdEmFEIqfDAIpFvhdCnnrgvqA8W0TL0s+q04NQj3cGD9eRrTB1Gz1onLpZxShwSkAPNXIWaUnp0lr/KX92qfdIBJFKQ0EDX4oY+l3We0g5EHXylG3fGGfs4RxaqsrhX8NDhX/DREmn6zCeNhG66chY+TyyhGKf2nIXvzWiedAiWtw+KRUFfepD3dDQUtmW0wIodyXr5kqcPytycnmVEko3rdFR+iOkNwJu9UTYuLqA/AOMqJmTlD5rfLW8Zrvd0P2/jzA6ioBf6jm5zcFJT0MUR6Yw0z1+G6+OQ4xK7b6MSFkEgFG95iWAsX7npQM/jPTL/r4g=
@@ -12,4 +12,4 @@ spec:
     metadata:
       creationTimestamp: null
       name: slack-api-url
-      namespace: default
+      namespace: monitoring

@@ -4,7 +4,7 @@ kind: SealedSecret
 metadata:
   creationTimestamp: null
   name: grafana-admin
-  namespace: default
+  namespace: monitoring
 spec:
   encryptedData:
     password: AgDEl8MIuusfo13xhpURy1IiW2QXpf1zmEibqLY58oapNIU4vduGecgAih8Yl6rZk7ogwpKl+31ezey+g9mBc+7Wq6aBAoEiVtZpiDElYW5Z9cp3M0BE4eoKRA1D70IXwbqyM6GfGgnzKLvgZYQSZWWR5dEBYGRGm2WH2Fxshb6cLItuF2WPkthNZUGWLCaDDI+6HJNL0I1/a1YTIKlIJ9FjBhPWdd0N+8IJeOK9Xl74yDcjW7EHKwJvFy1igtMHyuxGP5iUzvjZEGCQFomLiwPv1j1BRmFV++MA3/a/t0kN6v1a0BoFtDj4x9V89j+KOXRVPe5vdTtdexD4FBP+ZLg6TmbBEmh1Q9Ol3VKhxMlBLUpgnj4T1hi8lOLJ9Quipv8GDtPQAQA5kLuR8NeWlRMAthsqIwWgW9jZfgtZ50rVqA/DDPOUkeVTDLhaBmxBBaU1+hKWJvsy7t2nU++csfOqJkn1mxP2tPwn2/2OgqeCvLXLeumQDS6Lofm9Uv4NFfjROgC2i4YAHXMIEZPBjMAk1A7ESrx2MlXkMVVe94MBlEN7VcplKeyFHD+pBrtnc/UHkPPqZBUOKUCeJVJhkcy42DsGZqftAjouxn7ZqDVs15geHNdG6XNqgh0AvqLCbAp+ycZpHlow0w+QdqukT1YadtcPKRCTnmpANo4Qzp2R+vCpuoz45/bp1zAy96GUTA8/xFIJs0+vmG0b3d9n1Y0O
@@ -13,4 +13,4 @@ spec:
     metadata:
       creationTimestamp: null
       name: grafana-admin
-      namespace: default
+      namespace: monitoring
