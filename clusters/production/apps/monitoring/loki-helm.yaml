@@ -22,8 +22,6 @@ spec:
     loki:
       enabled: true
       isDefault: false
-      name: Loki
-      type: loki
       url: "http://{{(include \"loki.serviceName\" .)}}.monitoring.svc.cluster.local:{{ .Values.loki.service.port }}"
       readinessProbe:
         httpGet:
@@ -36,8 +34,14 @@ spec:
           port: http-metrics
         initialDelaySeconds: 45
       datasource:
-        jsonData: "{}"
-        uid: ""
+        enabled: true 
+        name: Loki
+        type: loki 
+        access: proxy
+        url: "http://loki-stack.monitoring.svc.cluster.local:3100"
+        isDefault: false
+        jsonData: {}
+        uid: ""     
     
     promtail:
       enabled: true
