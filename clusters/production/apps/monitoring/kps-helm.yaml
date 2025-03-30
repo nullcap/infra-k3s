@@ -54,6 +54,8 @@ spec:
     
     grafana:
       enabled: true
+      image:
+        tag: 11.0.0
       admin:
         existingSecret: grafana-admin
         userKey: user
