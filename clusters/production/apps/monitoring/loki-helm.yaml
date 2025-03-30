@@ -22,6 +22,8 @@ spec:
     loki:
       enabled: true
       isDefault: false
+      name: Loki
+      type: loki
       url: "http://{{(include \"loki.serviceName\" .)}}.monitoring.svc.cluster.local:{{ .Values.loki.service.port }}"
       readinessProbe:
         httpGet:
