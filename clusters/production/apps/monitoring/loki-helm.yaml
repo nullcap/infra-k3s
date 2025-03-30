@@ -33,6 +33,13 @@ spec:
           path: /ready
           port: http-metrics
         initialDelaySeconds: 45
+      # persistence:
+      #   enabled: true
+      #   existingClaim: loki-pvc
+      #   accessModes:
+      #     - ReadWriteOnce
+      #   size: 10Gi
+      #   mountPath: /var/loki
       # datasource:
       #   enabled: true 
       #   name: Loki

@@ -101,7 +101,7 @@ spec:
     - ReadWriteOnce
   storageClassName: ""
   nfs:
-    path: /volume1/Data/docker/kube-prometheus-stack/loki
+    path: /volume1/Data/docker/loki
     server: 10.0.0.20
   persistentVolumeReclaimPolicy: Retain
 ---
