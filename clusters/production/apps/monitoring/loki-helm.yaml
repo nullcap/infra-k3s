@@ -33,15 +33,15 @@ spec:
           path: /ready
           port: http-metrics
         initialDelaySeconds: 45
-      datasource:
-        enabled: true 
-        name: Loki
-        type: loki 
-        access: proxy
-        url: "http://loki-stack.monitoring.svc.cluster.local:3100"
-        isDefault: false
-        jsonData: {}
-        uid: ""     
+      # datasource:
+      #   enabled: true 
+      #   name: Loki
+      #   type: loki 
+      #   access: proxy
+      #   url: "http://loki-stack.monitoring.svc.cluster.local:3100"
+      #   isDefault: false
+      #   jsonData: {}
+      #   uid: ""     
     
     promtail:
       enabled: true
