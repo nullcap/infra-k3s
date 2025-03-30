@@ -7,3 +7,4 @@ spec:
   subnetRouter:
     advertiseRoutes:
       - "10.40.0.0/14"
+  exitNode: true 
