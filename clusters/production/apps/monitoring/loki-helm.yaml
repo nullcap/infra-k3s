@@ -48,24 +48,6 @@ spec:
     fluent-bit:
       enabled: false
     
-    grafana:
-      enabled: false
-      sidecar:
-        datasources:
-          label: ""
-          labelValue: ""
-          enabled: true
-          maxLines: 1000
-      image:
-        tag: 10.3.3
-    
-    prometheus:
-      enabled: false
-      isDefault: false
-      url: "http://{{ include \"prometheus.fullname\" .}}:{{ .Values.prometheus.server.service.servicePort }}{{ .Values.prometheus.server.prefixURL }}"
-      datasource:
-        jsonData: "{}"
-    
     filebeat:
       enabled: false
       filebeatConfig:
@@ -119,9 +101,3 @@ spec:
       https_proxy: ""
       no_proxy: ""
     
-    extraEnv:
-      - name: LOKI_ADMIN_PASSWORD
-        valueFrom:
-          secretKeyRef:
-            name: loki-admin
-            key: password
