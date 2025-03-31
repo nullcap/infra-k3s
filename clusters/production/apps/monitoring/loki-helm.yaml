@@ -40,7 +40,7 @@ spec:
           accessModes:
             - ReadWriteOnce
           size: 10Gi
-          mountPath: /var/loki
+          mountPath: /data
       # datasource:
       #   enabled: true 
       #   name: Loki
