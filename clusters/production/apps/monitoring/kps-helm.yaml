@@ -45,7 +45,8 @@ spec:
         ruleSelector: {}
         scrapeConfigSelector: {}
         scrapeConfigNamespaceSelector: {}
-      persistentVolume:
+      persistence:
+        enabled: true
         existingClaim: prometheus-pvc
       enableAdminAPI: true
       enableFeatureGates:
@@ -77,7 +78,8 @@ spec:
         datasources:
           enabled: true
           label: grafana_datasource
-      persistentVolume:
+      persistence:
+        enabled: true
         existingClaim: grafana-pvc
       datasources:
         datasources.yaml:
@@ -100,7 +102,8 @@ spec:
         alertmanagerConfiguration:
           name: alertmanager-config
         logFormat: json
-      persistentVolume:
+      persistence:
+        enabled: true
         existingClaim: alertmanager-pvc
       config:
         enabled: true
