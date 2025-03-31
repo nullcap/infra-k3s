@@ -42,6 +42,7 @@ spec:
             - ReadWriteOnce
           size: 10Gi
           mountPath: /data
+          type: pvc
       # datasource:
       #   enabled: true 
       #   name: Loki
