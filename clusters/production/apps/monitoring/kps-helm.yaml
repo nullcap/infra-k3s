@@ -37,6 +37,10 @@ spec:
     prometheus:
       enabled: true
       prometheusSpec:
+        enableAdminAPI: true
+        enableFeatureGates:
+          - default
+          - remote-write-receiver
         storageSpec:
           volumeClaimTemplate:
             spec:
@@ -57,10 +61,6 @@ spec:
         evaluationInterval: "20s"
         scrapeConfigSelector: {}
         scrapeConfigNamespaceSelector: {}
-      enableAdminAPI: true
-      enableFeatureGates:
-        - default
-        - remote-write-receiver
 
 ## Grafana  
     grafana:
