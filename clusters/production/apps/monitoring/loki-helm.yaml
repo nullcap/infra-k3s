@@ -21,6 +21,15 @@ spec:
     
     loki:
       enabled: true
+      persistence:
+        enabled: true
+        existingClaim: loki-pvc
+        storageClassName: "" 
+        accessModes:
+          - ReadWriteOnce
+        size: 10Gi
+        mountPath: /data
+        type: pvc
       isDefault: false
       url: "http://{{(include \"loki.serviceName\" .)}}.monitoring.svc.cluster.local:{{ .Values.loki.service.port }}"
       readinessProbe:
@@ -33,16 +42,6 @@ spec:
           path: /ready
           port: http-metrics
         initialDelaySeconds: 45
-      loki:
-        persistence:
-          enabled: true
-          existingClaim: loki-pvc
-          storageClassName: "" 
-          accessModes:
-            - ReadWriteOnce
-          size: 10Gi
-          mountPath: /data
-          type: pvc
       # datasource:
       #   enabled: true 
       #   name: Loki
