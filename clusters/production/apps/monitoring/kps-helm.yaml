@@ -26,7 +26,6 @@ spec:
   chart:
     spec:
       chart: kube-prometheus-stack
-      version: "*"  # Specify a version if needed
       sourceRef:
         kind: HelmRepository
         name: prometheus-community
@@ -39,7 +38,6 @@ spec:
           volumeClaimTemplate:
             spec:
               volumeName: prometheus-pv
-              # or specify selector, etc.
       resources:
         requests:
           storage: 10Gi
