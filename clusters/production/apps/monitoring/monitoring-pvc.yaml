@@ -87,4 +87,3 @@ spec:
       storage: 10Gi
   volumeName: loki-pv
   storageClassName: ""
-
