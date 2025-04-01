@@ -35,24 +35,21 @@ spec:
     prometheus:
       enabled: true
       prometheusSpec:
-        scrapeInterval: "10s"
-        evaluationInterval: "20s"
-        storageSpec:
-          volumeClaimTemplate:
-            spec:
-              storageClassName: ""
-              accessModes: ["ReadWriteOnce"]
-              resources:
-                requests:
-                  storage: 10Gi
-        scrapeInterval: "10s"
-        evaluationInterval: "20s"
+        volumes:
+          - name: prometheus-storage
+            persistentVolumeClaim:
+            claimName: prometheus-pvc
+        volumeMounts:
+          - name: prometheus-storage
+            mountPath: /prometheus
         serviceMonitorSelector: {}
         serviceMonitorNamespaceSelector: {}
         podMonitorNamespaceSelector: {}
         podMonitorSelector: {}
         ruleNamespaceSelector: {}
         ruleSelector: {}
+        scrapeInterval: "10s"
+        evaluationInterval: "20s"
         scrapeConfigSelector: {}
         scrapeConfigNamespaceSelector: {}
       enableAdminAPI: true
@@ -106,15 +103,6 @@ spec:
     alertmanager:
       enabled: true
       alertmanagerSpec:
-        logFormat: json
-        storage:
-          volumeClaimTemplate:
-            spec:
-              storageClassName: ""
-              accessModes: ["ReadWriteOnce"]
-              resources:
-                requests:
-                  storage: 5Gi
         alertmanagerConfiguration:
           name: alertmanager-config
         logFormat: json
