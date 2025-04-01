@@ -35,6 +35,8 @@ spec:
     prometheus:
       enabled: true
       prometheusSpec:
+        storageSpec: null
+        volumeClaimTemplate: null
         volumes:
           - name: prometheus-storage
             persistentVolumeClaim:
