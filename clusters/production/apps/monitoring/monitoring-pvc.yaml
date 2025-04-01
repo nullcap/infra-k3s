@@ -15,20 +15,6 @@ spec:
   persistentVolumeReclaimPolicy: Retain
 ---
 apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: prometheus-pvc
-  namespace: monitoring
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 10Gi
-  volumeName: prometheus-pv
-  storageClassName: ""
----
-apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: grafana-pv
@@ -73,17 +59,3 @@ spec:
     path: /volume1/Data/docker/loki
     server: 10.0.0.20
   persistentVolumeReclaimPolicy: Retain
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: loki-pvc
-  namespace: monitoring
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 10Gi
-  volumeName: loki-pv
-  storageClassName: ""
