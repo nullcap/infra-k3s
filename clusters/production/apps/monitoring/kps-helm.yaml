@@ -35,24 +35,15 @@ spec:
     prometheus:
       enabled: true
       prometheusSpec:
-        # Disable default storage configuration
-        storageSpec: null
-        # Explicitly reference your PVC
-        storage:
+        storageSpec:
           volumeClaimTemplate:
-            spec: null
-        # This is the proper way to reference an existing PVC
-        volumeClaimTemplate:
-          spec: null
-        # Add this section
-        thanos: 
-          objectStorageConfig: null
-        # Set the PVC directly
-        externalLabels: {}
-        volumes:
-          - name: data
-            persistentVolumeClaim:
-              claimName: prometheus-pvc
+            spec:
+              storageClassName: ""
+              accessModes: ["ReadWriteOnce"]
+              resources:
+                requests:
+                  storage: 10Gi
+              volumeName: prometheus-pv
         serviceMonitorSelector: {}
         serviceMonitorNamespaceSelector: {}
         podMonitorNamespaceSelector: {}
