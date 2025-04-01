@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: loki-stack
-      version: "*"  # Specify a version if needed
+      version: "*"  
       sourceRef:
         kind: HelmRepository
         name: grafana
@@ -41,16 +41,7 @@ spec:
         httpGet:
           path: /ready
           port: http-metrics
-        initialDelaySeconds: 45
-      # datasource:
-      #   enabled: true 
-      #   name: Loki
-      #   type: loki 
-      #   access: proxy
-      #   url: "http://loki-stack.monitoring.svc.cluster.local:3100"
-      #   isDefault: false
-      #   jsonData: {}
-      #   uid: ""     
+        initialDelaySeconds: 45    
     
     promtail:
       enabled: true
