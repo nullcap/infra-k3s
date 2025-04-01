@@ -41,7 +41,16 @@ spec:
         httpGet:
           path: /ready
           port: http-metrics
-        initialDelaySeconds: 45    
+        initialDelaySeconds: 45
+      ingress:
+        enabled: true
+        annotations:
+          traefik.ingress.kubernetes.io/router.entrypoints: web
+        hosts:
+          - host: loki.local
+            paths:
+              - path: /
+                pathType: Prefix
     
     promtail:
       enabled: true
