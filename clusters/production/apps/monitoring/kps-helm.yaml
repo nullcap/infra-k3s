@@ -24,6 +24,7 @@ metadata:
 spec:
   interval: 10m
   chart:
+    version: "*"
     spec:
       chart: kube-prometheus-stack
       sourceRef:
@@ -31,6 +32,8 @@ spec:
         name: prometheus-community
         namespace: monitoring
   values:
+
+## Prometheus  
     prometheus:
       enabled: true
       prometheusSpec:
@@ -55,7 +58,8 @@ spec:
       enableFeatureGates:
         - default
         - remote-write-receiver
-    
+
+## Grafana  
     grafana:
       enabled: true
       # image:
@@ -98,7 +102,8 @@ spec:
               url: "http://loki-stack.monitoring.svc.cluster.local:3100"
               access: proxy
               isDefault: false
-    
+
+## Alertmanager 
     alertmanager:
       enabled: true
       alertmanagerSpec:
@@ -155,7 +160,7 @@ spec:
   chart:
     spec:
       chart: prometheus-adapter
-      version: "*"  # Specify a version if needed
+      version: "*"
       sourceRef:
         kind: HelmRepository
         name: prometheus-community
