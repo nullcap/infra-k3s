@@ -40,10 +40,13 @@ spec:
         storageSpec:
           volumeClaimTemplate:
             spec:
+              storageClassName: ""
               volumeName: prometheus-pv
-      resources:
-        requests:
-          storage: 10Gi
+              accessModes:
+                - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 10Gi
         serviceMonitorSelector: {}
         serviceMonitorNamespaceSelector: {}
         podMonitorNamespaceSelector: {}
