@@ -24,8 +24,8 @@ metadata:
 spec:
   interval: 10m
   chart:
-    version: "*"
     spec:
+      version: "*"
       chart: kube-prometheus-stack
       sourceRef:
         kind: HelmRepository
