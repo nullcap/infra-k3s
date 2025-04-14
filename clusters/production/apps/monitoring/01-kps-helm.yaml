@@ -34,8 +34,8 @@ spec:
   values:
 
     installCRDs: true
-    # prometheusOperator:
-    #   createCustomResource: true
+    prometheusOperator:
+      createCustomResource: true
 
 ## Prometheus  
     prometheus:
