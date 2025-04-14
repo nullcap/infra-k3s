@@ -33,8 +33,9 @@ spec:
         namespace: monitoring
   values:
 
-    prometheusOperator:
-      createCustomResource: true
+    installCRDs: true
+    # prometheusOperator:
+    #   createCustomResource: true
 
 ## Prometheus  
     prometheus:
