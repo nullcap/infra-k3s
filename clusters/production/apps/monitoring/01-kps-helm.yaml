@@ -104,15 +104,15 @@ spec:
               isDefault: false
 
 ## Alertmanager 
-    alertmanager:
-      enabled: true
-      alertmanagerSpec:
-        alertmanagerConfiguration:
-          name: alertmanager-config
-        logFormat: json
-      config:
-        enabled: true
-        name: alertmanager-config
+    # alertmanager:
+    #   enabled: true
+    #   alertmanagerSpec:
+    #     alertmanagerConfiguration:
+    #       name: alertmanager-config
+    #     logFormat: json
+    #   config:
+    #     enabled: true
+    #     name: alertmanager-config
     
     kubeStateMetrics:
       enabled: true
