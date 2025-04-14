@@ -33,6 +33,9 @@ spec:
         namespace: monitoring
   values:
 
+    prometheusOperator:
+      createCustomResource: true
+
 ## Prometheus  
     prometheus:
       enabled: true
