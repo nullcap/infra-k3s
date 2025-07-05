@@ -10,8 +10,8 @@ spec:
     - ReadWriteOnce
   storageClassName: ""
   nfs:
-    path: /volume1/Data/container/production/kube-prometheus-stack/prometheus
-    server: 10.0.0.20
+    path: /mnt/Zpool/Apps/Container/home/kube-prometheus-stack/prometheus
+    server: 10.0.0.22
   persistentVolumeReclaimPolicy: Retain
 ---
 apiVersion: v1
@@ -26,8 +26,8 @@ spec:
     - ReadWriteOnce
   storageClassName: ""
   nfs:
-    path: /volume1/Data/container/production/kube-prometheus-stack/grafana
-    server: 10.0.0.20
+    path: /mnt/Zpool/Apps/Container/home/kube-prometheus-stack/grafana
+    server: 10.0.0.22
   persistentVolumeReclaimPolicy: Retain
 ---
 apiVersion: v1
@@ -56,8 +56,8 @@ spec:
     - ReadWriteOnce
   storageClassName: ""
   nfs:
-    path: /volume1/Data/container/production/loki
-    server: 10.0.0.20
+    path: /mnt/Zpool/Apps/Container/home/loki
+    server: 10.0.0.22
   persistentVolumeReclaimPolicy: Retain
 ---
 apiVersion: v1
