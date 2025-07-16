@@ -23,8 +23,14 @@ spec:
           env:
             - name: DOWNLOADER
               value: "nullchive"
+            - name: WARRIOR_ID
+              value: "nullchive"
             - name: SELECTED_PROJECT
               value: "auto"
+            - name: CONCURRENT_ITEMS
+              value: "6"
+            - name: SHARED_RSYNC_THREADS
+              value: "10"
           resources:
             requests:
               memory: "512Mi"
@@ -60,23 +66,4 @@ spec:
       port: 80
       targetPort: 8001
   type: ClusterIP
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: archivetw-ingress
-  namespace: archivetw
-  annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web
-spec:
-  rules:
-    - host: archivetw.local
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: archivetw-service
-                port:
-                  number: 80
+
