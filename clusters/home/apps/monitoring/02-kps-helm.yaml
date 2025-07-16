@@ -87,8 +87,8 @@ spec:
           cpu: 1000m
       admin:
         existingSecret: grafana-admin
-        # userKey: user
-        # passwordKey: password
+        userKey: user
+        passwordKey: password
       service:
         type: ClusterIP
       ingress:
