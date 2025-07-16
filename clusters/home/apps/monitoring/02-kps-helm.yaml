@@ -41,6 +41,13 @@ spec:
     prometheus:
       enabled: true
       prometheusSpec:
+        resources:
+          requests:
+            memory: 500Mi
+            cpu: 250m
+          limits:
+            memory: 1500Mi
+            cpu: 1500m
         enableAdminAPI: true
         enableFeatureGates:
           - default
@@ -61,18 +68,27 @@ spec:
         podMonitorSelector: {}
         ruleNamespaceSelector: {}
         ruleSelector: {}
-        scrapeInterval: "10s"
-        evaluationInterval: "20s"
+        scrapeInterval: "30s"
+        evaluationInterval: "30s"
+        retention: 7d
+        walCompression: true
         scrapeConfigSelector: {}
         scrapeConfigNamespaceSelector: {}
 
 ## Grafana  
     grafana:
       enabled: true
+      resources:
+        requests:
+          memory: 512Mi
+          cpu: 500m
+        limits:
+          memory: 1024Mi
+          cpu: 1000m
       admin:
         existingSecret: grafana-admin
-        userKey: user
-        passwordKey: password
+        # userKey: user
+        # passwordKey: password
       service:
         type: ClusterIP
       ingress:
@@ -107,6 +123,13 @@ spec:
     alertmanager:
       enabled: true
       alertmanagerSpec:
+        resources:
+          requests:
+            memory: 200Mi
+            cpu: 100m
+          limits:
+            memory: 1024Mi
+            cpu: 1024m
         alertmanagerConfiguration:
           name: alertmanager-config
         logFormat: json
