@@ -32,7 +32,6 @@ spec:
         name: prometheus-community
         namespace: monitoring
   values:
-
     installCRDs: true
     prometheusOperator:
       createCustomResource: true
