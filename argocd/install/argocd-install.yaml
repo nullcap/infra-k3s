@@ -1,0 +1,51 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://argoproj.github.io/argo-helm
+    chart: argo-cd
+    targetRevision: 7.7.8
+    helm:
+      values: |
+        global:
+          domain: argocd.local
+        
+        configs:
+          cm:
+            # Enable server-side diff by default
+            application.instanceLabelKey: argocd.argoproj.io/instance
+            # Enable experimental Kustomize Helm support
+            kustomize.buildOptions: --enable-helm
+            # Allow applications to be deployed in any namespace
+            application.namespaces: "*"
+          params:
+            # Disable TLS for local development
+            server.insecure: true
+            # Enable server-side diff
+            server.enable.proxy.extension: true
+        
+        server:
+          ingress:
+            enabled: true
+            annotations:
+              traefik.ingress.kubernetes.io/router.entrypoints: web
+            hosts:
+              - argocd.local
+            ingressClassName: traefik
+        
+        # Enable the app-of-apps pattern
+        applicationSet:
+          enabled: true
+  destination:
+    namespace: argocd
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

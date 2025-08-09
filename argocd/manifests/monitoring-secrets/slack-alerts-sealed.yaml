@@ -1,0 +1,15 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  creationTimestamp: null
+  name: slack-api-url
+  namespace: monitoring
+spec:
+  encryptedData:
+    slack_api_url: AgB9kiMbvSxV9nt6OTU/4M6+zLBVMoH9YjxTWIygMbtq8520W/KRzXNKQiNa8hAF3MYyacR73WfDisoNMma5qqWoM7iRkFHWV4rsSG4HFMiot4URqDnxeEeuADUclOQLyfVTzw2SdTqLwUW8UUb8cIVO6kWsxY+ivAHqWIIXDyx6xZApTklUuEa691AverqMlieLWBtZoGNUGdewCu3d0g1+2sV1U7zAxnHIO0jxrZmTLA1jEaI/iEH+t/OT+ANUWvp+2+UJiG8hBK/Yzpae59rpIc8C7+TJ5MhfClv1fKMVH18a28IHCAMAeJHNdatSnFhndW/sVweLVWQ7mjBuKX2mW1lhjGnY9thk3/uqpNj59FI34gbPvyZ0btLXGbNXq7PHZR0pS2GztaBTd5/HSi3A+OPRi0lgVTvEDxHYvlt0xsig8js4IYAhBNBvZkUHeKth4or2F2reWjrTnQ90/5o5dFAposw6X6ZBd9KOKNg81nfU5sv9tSNcQGKprZoHqfdRrdE11pdKe5q6ced+LPMEOASic+Y8eHE7fqF41vot4DgAl2DNMoiJKyaOuy4GSyuztDMNzFmk9mJt4SgUa/RWZ07uPXyTOkg6pH/n51ZVGW2rpBZrgzvQB4r00FHxT3I8aXHat//MAFumb3HMiu0bMxJUaEqDDaB3tKLhnnuoZ/mjCTq+k+nTa1TAsz+hPl52Q9CXuSsIs4yvfPPAzdKwNN1wnQlhfh5aWnJbDGmpvMkWXR8IgXQSXH2PLO5TryPJ3QW3toSSj9Sypxa335qB2LVBL2P8yRpW7LQ79KhEKLE=
+  template:
+    metadata:
+      creationTimestamp: null
+      name: slack-api-url
+      namespace: monitoring
