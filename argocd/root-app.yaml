@@ -8,7 +8,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/nullcap/infra-k3s.git
+    repoURL: ssh://git@github.com/nullcap/infra-k3s.git
     path: argocd/applications
     targetRevision: main
     directory:
