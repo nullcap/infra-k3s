@@ -23,7 +23,10 @@ spec:
             auth:
               type: basic
               username: "2600859"
-              # Password will be provided via external secret
+              passwordFrom:
+                secretKeyRef:
+                  name: grafana-k8s-monitoring-secrets
+                  key: metrics_password
 
           - name: grafana-cloud-logs
             type: loki
@@ -31,7 +34,10 @@ spec:
             auth:
               type: basic
               username: "1296106"
-              # Password will be provided via external secret
+              passwordFrom:
+                secretKeyRef:
+                  name: grafana-k8s-monitoring-secrets
+                  key: logs_password
 
           - name: grafana-cloud-otlp-endpoint
             type: otlp
@@ -40,7 +46,10 @@ spec:
             auth:
               type: basic
               username: "1338312"
-              # Password will be provided via external secret
+              passwordFrom:
+                secretKeyRef:
+                  name: grafana-k8s-monitoring-secrets
+                  key: otlp_password
             metrics:
               enabled: true
             logs:
@@ -54,7 +63,10 @@ spec:
             auth:
               type: basic
               username: "1338312"
-              # Password will be provided via external secret
+              passwordFrom:
+                secretKeyRef:
+                  name: grafana-k8s-monitoring-secrets
+                  key: profiles_password
 
         clusterMetrics:
           enabled: true
@@ -109,7 +121,7 @@ spec:
         profiling:
           enabled: true
 
-        # Simplified alloy configuration - passwords will be handled via external secrets
+        # Alloy configurations with proper secret references
         alloy-metrics:
           enabled: true
           remoteConfig:
@@ -118,7 +130,10 @@ spec:
             auth:
               type: basic
               username: "1338312"
-              # Password will be provided via external secret
+              passwordFrom:
+                secretKeyRef:
+                  name: grafana-k8s-monitoring-secrets
+                  key: fm_password
 
         alloy-singleton:
           enabled: true
@@ -128,7 +143,10 @@ spec:
             auth:
               type: basic
               username: "1338312"
-              # Password will be provided via external secret
+              passwordFrom:
+                secretKeyRef:
+                  name: grafana-k8s-monitoring-secrets
+                  key: fm_password
 
         alloy-logs:
           enabled: true
@@ -138,7 +156,10 @@ spec:
             auth:
               type: basic
               username: "1338312"
-              # Password will be provided via external secret
+              passwordFrom:
+                secretKeyRef:
+                  name: grafana-k8s-monitoring-secrets
+                  key: fm_password
 
         alloy-receiver:
           enabled: true
@@ -162,7 +183,10 @@ spec:
             auth:
               type: basic
               username: "1338312"
-              # Password will be provided via external secret
+              passwordFrom:
+                secretKeyRef:
+                  name: grafana-k8s-monitoring-secrets
+                  key: fm_password
 
         alloy-profiles:
           enabled: true
@@ -172,7 +196,10 @@ spec:
             auth:
               type: basic
               username: "1338312"
-              # Password will be provided via external secret
+              passwordFrom:
+                secretKeyRef:
+                  name: grafana-k8s-monitoring-secrets
+                  key: fm_password
   destination:
     namespace: default
     server: https://kubernetes.default.svc

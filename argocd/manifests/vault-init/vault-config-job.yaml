@@ -1,0 +1,123 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: vault-config
+  namespace: vault
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  template:
+    spec:
+      serviceAccountName: vault-config-sa
+      containers:
+      - name: vault-config
+        image: hashicorp/vault:1.15.0
+        command:
+        - /bin/sh
+        - -c
+        - |
+          # Wait for Vault to be ready and unsealed
+          until vault status | grep -q "Sealed.*false"; do
+            echo "Waiting for Vault to be unsealed..."
+            sleep 5
+          done
+          
+          # Get root token from secret
+          ROOT_TOKEN=$(kubectl get secret vault-init-secret -o jsonpath='{.data.root-token}' | base64 -d)
+          export VAULT_TOKEN="$ROOT_TOKEN"
+          
+          # Enable KV secrets engine if not already enabled
+          if ! vault secrets list | grep -q "secret/"; then
+            echo "Enabling KV secrets engine..."
+            vault secrets enable -path=secret kv-v2
+          fi
+          
+          # Enable Kubernetes auth if not already enabled
+          if ! vault auth list | grep -q "kubernetes/"; then
+            echo "Enabling Kubernetes auth..."
+            vault auth enable kubernetes
+          fi
+          
+          # Get Kubernetes configuration
+          SA_SECRET=$(kubectl get serviceaccount default -o jsonpath='{.secrets[0].name}')
+          SA_JWT_TOKEN=$(kubectl get secret $SA_SECRET -o jsonpath='{.data.token}' | base64 -d)
+          SA_CA_CRT=$(kubectl get secret $SA_SECRET -o jsonpath='{.data.ca\.crt}' | base64 -d)
+          K8S_HOST=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
+          
+          # Configure Kubernetes auth
+          echo "Configuring Kubernetes auth..."
+          vault write auth/kubernetes/config \
+            kubernetes_host="$K8S_HOST" \
+            kubernetes_ca_cert="$SA_CA_CRT" \
+            token_reviewer_jwt="$SA_JWT_TOKEN"
+          
+          # Create policy for external secrets
+          echo "Creating external-secrets policy..."
+          vault policy write external-secrets - <<EOF
+          path "secret/data/*" {
+            capabilities = ["read"]
+          }
+          EOF
+          
+          # Create Kubernetes auth role
+          echo "Creating Kubernetes auth role..."
+          vault write auth/kubernetes/role/external-secrets \
+            bound_service_account_names=external-secrets-sa \
+            bound_service_account_namespaces=default,monitoring \
+            policies=external-secrets \
+            ttl=1h
+          
+          # Create placeholder secrets (these will be replaced with actual values)
+          echo "Creating placeholder secrets..."
+          vault kv put secret/grafana-cloud \
+            metrics-password="placeholder" \
+            logs-password="placeholder" \
+            otlp-password="placeholder" \
+            profiles-password="placeholder" \
+            fm-password="placeholder"
+          
+          vault kv put secret/grafana \
+            admin-user="admin" \
+            admin-password="placeholder"
+          
+          vault kv put secret/slack \
+            api-url="placeholder"
+          
+          echo "Vault configuration complete"
+        env:
+        - name: VAULT_ADDR
+          value: "http://vault.vault.svc.cluster.local:8200"
+        - name: VAULT_SKIP_VERIFY
+          value: "true"
+      restartPolicy: OnFailure
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vault-config-sa
+  namespace: vault
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: vault-config-role
+  namespace: vault
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: vault-config-rolebinding
+  namespace: vault
+subjects:
+- kind: ServiceAccount
+  name: vault-config-sa
+  namespace: vault
+roleRef:
+  kind: Role
+  name: vault-config-role
+  apiGroup: rbac.authorization.k8s.io

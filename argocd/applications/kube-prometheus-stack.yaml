@@ -1,0 +1,163 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kube-prometheus-stack
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: kube-prometheus-stack
+spec:
+  project: default
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: kube-prometheus-stack
+    targetRevision: "*"
+    helm:
+      values: |
+        installCRDs: true
+        prometheusOperator:
+          createCustomResource: true
+
+        ## Prometheus  
+        prometheus:
+          enabled: true
+          prometheusSpec:
+            resources:
+              requests:
+                memory: 500Mi
+                cpu: 250m
+              limits:
+                memory: 1500Mi
+                cpu: 1500m
+            enableAdminAPI: true
+            enableFeatureGates:
+              - default
+              - remote-write-receiver
+            storageSpec:
+              volumeClaimTemplate:
+                spec:
+                  storageClassName: ""
+                  volumeName: prometheus-pv
+                  accessModes:
+                    - ReadWriteOnce
+                  resources:
+                    requests:
+                      storage: 10Gi
+            serviceMonitorSelector: {}
+            serviceMonitorNamespaceSelector: {}
+            podMonitorNamespaceSelector: {}
+            podMonitorSelector: {}
+            ruleNamespaceSelector: {}
+            ruleSelector: {}
+            scrapeInterval: "30s"
+            evaluationInterval: "30s"
+            retention: 7d
+            walCompression: true
+            scrapeConfigSelector: {}
+            scrapeConfigNamespaceSelector: {}
+
+        ## Grafana  
+        grafana:
+          enabled: true
+          resources:
+            requests:
+              memory: 512Mi
+              cpu: 500m
+            limits:
+              memory: 1024Mi
+              cpu: 1000m
+          admin:
+            existingSecret: grafana-admin
+            userKey: user
+            passwordKey: password
+          service:
+            type: ClusterIP
+          ingress:
+            enabled: true
+            annotations:
+              traefik.ingress.kubernetes.io/router.entrypoints: web
+            hosts:
+              - grafana.local
+          defaultDashboardsEnabled: true
+          sidecar:
+            dashboards:
+              enabled: true
+              label: grafana_dashboard
+              folder: /var/lib/grafana/dashboards
+            datasources:
+              enabled: true
+              label: grafana_datasource
+          persistence:
+            enabled: true
+            existingClaim: grafana-pvc
+          datasources:
+            datasources.yaml:
+              apiVersion: 1
+              datasources:
+                - name: Loki
+                  type: loki
+                  url: "http://loki-stack.monitoring.svc.cluster.local:3100"
+                  access: proxy
+                  isDefault: false
+
+        ## Alertmanager 
+        alertmanager:
+          enabled: true
+          alertmanagerSpec:
+            resources:
+              requests:
+                memory: 200Mi
+                cpu: 100m
+              limits:
+                memory: 1024Mi
+                cpu: 1024m
+            alertmanagerConfiguration:
+              name: alertmanager-config
+            logFormat: json
+          config:
+            enabled: true
+            name: alertmanager-config
+        
+        kubeStateMetrics:
+          enabled: true
+        
+        nodeExporter:
+          enabled: true
+        
+        kubelet:
+          enabled: true
+          serviceMonitor:
+            enabled: true
+        
+        coreDns:
+          enabled: true
+          serviceMonitor:
+            enabled: true
+        
+        kubeApiServer:
+          enabled: true
+          serviceMonitor:
+            enabled: true
+        
+        kubeControllerManager:
+          enabled: true
+          serviceMonitor:
+            enabled: true
+        
+        kubeScheduler:
+          enabled: true
+          serviceMonitor:
+            enabled: true
+        
+        kubeProxy:
+          enabled: true
+          serviceMonitor:
+            enabled: true
+  destination:
+    namespace: monitoring
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

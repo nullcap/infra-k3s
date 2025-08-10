@@ -1,0 +1,108 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vault
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: vault
+spec:
+  project: default
+  source:
+    repoURL: https://helm.releases.hashicorp.com
+    chart: vault
+    targetRevision: "0.27.0"
+    helm:
+      values: |
+        global:
+          enabled: true
+        
+        server:
+          enabled: true
+          
+          # Dev mode for local development
+          dev:
+            enabled: false
+          
+          # Unseal configuration
+          unsealConfig:
+            secretName: vault-init-secret
+            secretKey: unseal-key
+          
+          # Service configuration
+          service:
+            enabled: true
+            type: ClusterIP
+          
+          # Ingress configuration
+          ingress:
+            enabled: true
+            annotations:
+              traefik.ingress.kubernetes.io/router.entrypoints: web
+            hosts:
+              - host: vault.local
+                paths:
+                  - path: /
+                    pathType: Prefix
+          
+          # Storage configuration (using NFS)
+          storage:
+            file:
+              path: /vault/data
+          
+          # Persistence configuration
+          persistence:
+            enabled: true
+            existingClaim: vault-pvc
+          
+          # Service account
+          serviceAccount:
+            create: true
+            name: vault
+          
+          # Security context
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            fsGroup: 1000
+          
+          # Resources
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 250m
+              memory: 256Mi
+          
+          # Extra environment variables
+          extraEnvironmentVars:
+            VAULT_SKIP_VERIFY: "true"
+          
+          # HA configuration (disabled for dev)
+          ha:
+            enabled: false
+          
+          # UI configuration
+          ui:
+            enabled: true
+          
+          # Audit logging
+          auditStorage:
+            enabled: false
+          
+          # Metrics
+          metrics:
+            enabled: true
+            service:
+              annotations:
+                prometheus.io/scrape: "true"
+                prometheus.io/port: "9102"
+  destination:
+    namespace: vault
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

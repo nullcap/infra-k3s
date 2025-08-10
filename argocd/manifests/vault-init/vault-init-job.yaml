@@ -1,0 +1,83 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: vault-init
+  namespace: vault
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  template:
+    spec:
+      serviceAccountName: vault-init-sa
+      containers:
+      - name: vault-init
+        image: hashicorp/vault:1.15.0
+        command:
+        - /bin/sh
+        - -c
+        - |
+          # Wait for Vault to be ready
+          until vault status; do
+            echo "Waiting for Vault to be ready..."
+            sleep 5
+          done
+          
+          # Check if Vault is already initialized
+          if vault status | grep -q "Initialized.*true"; then
+            echo "Vault is already initialized"
+            exit 0
+          fi
+          
+          # Initialize Vault
+          echo "Initializing Vault..."
+          vault operator init -key-shares=1 -key-threshold=1 -format=json > /tmp/init.json
+          
+          # Extract root token and unseal key
+          ROOT_TOKEN=$(cat /tmp/init.json | jq -r '.root_token')
+          UNSEAL_KEY=$(cat /tmp/init.json | jq -r '.unseal_keys_b64[0]')
+          
+          # Store in Kubernetes secret
+          kubectl create secret generic vault-init-secret \
+            --from-literal=root-token="$ROOT_TOKEN" \
+            --from-literal=unseal-key="$UNSEAL_KEY" \
+            --dry-run=client -o yaml | kubectl apply -f -
+          
+          echo "Vault initialized successfully"
+          echo "Root token and unseal key stored in vault-init-secret"
+        env:
+        - name: VAULT_ADDR
+          value: "http://vault.vault.svc.cluster.local:8200"
+        - name: VAULT_SKIP_VERIFY
+          value: "true"
+      restartPolicy: OnFailure
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vault-init-sa
+  namespace: vault
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: vault-init-role
+  namespace: vault
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["create", "get", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: vault-init-rolebinding
+  namespace: vault
+subjects:
+- kind: ServiceAccount
+  name: vault-init-sa
+  namespace: vault
+roleRef:
+  kind: Role
+  name: vault-init-role
+  apiGroup: rbac.authorization.k8s.io

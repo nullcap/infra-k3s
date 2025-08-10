@@ -1,6 +1,6 @@
-# ArgoCD Migration
+# ArgoCD Migration with External Secrets + Vault
 
-This directory contains the ArgoCD configuration for migrating from FluxCD to ArgoCD.
+This directory contains the ArgoCD configuration for migrating from FluxCD to ArgoCD with External Secrets Operator (ESO) and HashiCorp Vault for secret management.
 
 ## Directory Structure
 
@@ -10,21 +10,25 @@ argocd/
 │   ├── argocd-namespace.yaml    # ArgoCD namespace
 │   └── argocd-install.yaml      # ArgoCD installation Application
 ├── helm-repositories/
-│   ├── grafana.yaml             # Grafana Helm repository
-│   └── sealed-secrets.yaml     # Sealed Secrets Helm repository
+│   └── grafana.yaml             # Grafana Helm repository
 ├── applications/
 │   ├── infrastructure.yaml     # Infrastructure components
-│   ├── sealed-secrets.yaml     # Sealed Secrets controller
+│   ├── external-secrets-operator.yaml  # External Secrets Operator
+│   ├── vault.yaml              # HashiCorp Vault
+│   ├── vault-init.yaml         # Vault initialization
+│   ├── external-secrets.yaml   # External Secrets configuration
 │   ├── grafana-k8s-monitoring.yaml  # Grafana Cloud monitoring
+│   ├── kube-prometheus-stack.yaml  # Local monitoring stack
 │   ├── loki-grafanacloud.yaml  # Loki/Promtail for Grafana Cloud
 │   ├── archivetw.yaml          # Archive Team Warrior
-│   └── monitoring-secrets.yaml # Monitoring secrets
+│   └── monitoring-secrets.yaml # Monitoring secrets (now empty)
 ├── manifests/
 │   ├── infrastructure/         # Infrastructure manifests
 │   ├── archivetw/             # Archive Team Warrior manifests
-│   └── monitoring-secrets/    # Sealed secrets for monitoring
+│   ├── monitoring-secrets/    # Empty (migrated to External Secrets)
+│   ├── external-secrets/      # External Secrets configuration
+│   └── vault-init/            # Vault initialization jobs
 ├── root-app.yaml              # Root Application of Applications
-├── migrate.sh                 # Migration script
 ├── cleanup-flux.sh           # FluxCD cleanup script
 └── README.md                 # This file
 ```
@@ -37,12 +41,15 @@ argocd/
 - Helm repositories configured
 - Infrastructure manifests migrated
 - Archive Team Warrior manifests created
-- Monitoring secrets preserved
+- **External Secrets Operator + Vault integration**
+- **Sealed secrets removed and replaced with External Secrets**
+- **Pure GitOps approach with no shell scripts**
 
 ⚠️ **Needs Attention:**
-- Grafana Cloud credentials need to be configured manually
+- Vault needs to be initialized and configured (handled via GitOps)
+- Secrets need to be migrated from sealed secrets to Vault
+- Grafana Cloud credentials need to be stored in Vault
 - Loki Grafana Cloud credentials need to be updated
-- Some complex Helm values simplified for ArgoCD compatibility
 
 ## Migration Steps
 
@@ -95,33 +102,63 @@ kubectl apply -f argocd/root-app.yaml
 - **RBAC**: Prometheus adapter roles
 - **Traefik**: Additional Traefik configuration
 
-### Sealed Secrets
-- **sealed-secrets**: Bitnami Sealed Secrets controller (deployed to flux-system namespace for compatibility)
+### Secret Management
+- **External Secrets Operator**: Manages secrets from external sources
+- **Vault**: HashiCorp Vault for secret storage
+- **Vault Init**: Automated Vault initialization and configuration
+- **External Secrets Config**: Configuration for secret retrieval
 
 ### Monitoring
-- **grafana-k8s-monitoring**: Grafana Cloud monitoring stack (simplified configuration)
+- **grafana-k8s-monitoring**: Grafana Cloud monitoring stack (uses External Secrets)
+- **kube-prometheus-stack**: Local monitoring stack with Prometheus and Grafana (uses NFS storage)
 - **loki-grafanacloud**: Loki stack with Promtail for log shipping to Grafana Cloud
-- **monitoring-secrets**: Sealed secrets containing Grafana Cloud credentials
 
 ### Applications
 - **archivetw**: Archive Team Warrior deployment
 
+## External Secrets + Vault Setup
+
+### Vault Configuration
+- **Automated Initialization**: Vault is automatically initialized via Kubernetes jobs
+- **KV Secrets Engine**: Enabled at `/secret` path
+- **Kubernetes Auth**: Configured for service account authentication
+- **UI Access**: Available at http://vault.local
+
+### External Secrets Configuration
+- **SecretStore**: Configured to connect to Vault
+- **Service Accounts**: Created for authentication
+- **External Secrets**: Configured for all monitoring secrets
+
+### Secret Migration
+The following secrets have been migrated from sealed secrets to Vault:
+- **Grafana Cloud**: metrics-password, logs-password, otlp-password, profiles-password, fm-password
+- **Grafana Admin**: admin-user, admin-password
+- **Slack**: api-url
+
 ## Important Notes
 
-### Grafana Cloud Configuration
-The Grafana Cloud monitoring application has been simplified for ArgoCD compatibility. You'll need to:
+### Vault Setup (GitOps)
+1. **Automatic Initialization**: Vault is initialized automatically via Kubernetes jobs
+2. **Configuration**: Vault is configured automatically with secrets engine and auth
+3. **Placeholder Secrets**: Initial placeholder secrets are created automatically
+4. **Manual Secret Updates**: You'll need to update the placeholder secrets with real values
 
-1. **Update credentials manually** in the ArgoCD UI or via kubectl
-2. **Configure external secrets** for the passwords
-3. **Verify the monitoring stack** is working properly
+### External Secrets
+1. **Automatic Sync**: External Secrets Operator automatically syncs secrets from Vault
+2. **Service Accounts**: Proper RBAC configured for secret access
+3. **Refresh Interval**: Secrets are refreshed every hour
+
+### Grafana Cloud Configuration
+The Grafana Cloud monitoring application now uses External Secrets:
+- All passwords are retrieved from Vault via External Secrets
+- No manual credential updates needed
+- Automatic secret rotation support
 
 ### Loki Configuration
 The Loki application needs updated credentials:
 - Replace `your-grafana-loki-username` with actual username
 - Replace `your-grafana-loki-api-key` with actual API key
-
-### Sealed Secrets
-The sealed secrets controller is kept in the `flux-system` namespace for compatibility with existing sealed secrets. This allows the existing encrypted secrets to continue working.
+- Consider storing these in Vault as well
 
 ## FluxCD Migration Notes
 
@@ -129,23 +166,22 @@ The sealed secrets controller is kept in the `flux-system` namespace for compati
 1. **HelmReleases** → **ArgoCD Applications** with Helm sources
 2. **HelmRepositories** → **ConfigMaps** with ArgoCD repository labels
 3. **Plain manifests** → **Kustomization-based Applications**
-4. **Flux notifications** → Will need to be configured in ArgoCD separately
+4. **Sealed Secrets** → **External Secrets + Vault**
+5. **Flux notifications** → Will need to be configured in ArgoCD separately
 
 ### Key differences:
 - ArgoCD uses `Applications` instead of `HelmReleases`
 - Helm repositories are configured as ConfigMaps in the argocd namespace
 - The "App of Apps" pattern replaces Flux's recursive kustomization
+- External Secrets + Vault replaces sealed secrets for better secret management
 - ArgoCD has its own UI for monitoring and managing deployments
-
-### Secrets handling:
-- Sealed Secrets controller is kept for compatibility
-- Existing sealed secrets should work without modification
-- ArgoCD can also use its own secret management if needed
+- **Pure GitOps approach with no manual scripts**
 
 ## Accessing Applications
 
 After deployment, you can access:
 - **ArgoCD UI**: http://argocd.local
+- **Vault UI**: http://vault.local
 - **Grafana** (if prometheus stack was enabled): http://grafana.local
 
 ## Troubleshooting
@@ -171,24 +207,43 @@ kubectl get repositories -n argocd
 kubectl edit secret <repo-secret> -n argocd
 ```
 
-### Credential issues:
+### External Secrets issues:
 ```bash
-# Check if sealed secrets are working
-kubectl get sealedsecrets -A
+# Check External Secrets status
+kubectl get externalsecrets -A
 
-# Check if secrets are being created
-kubectl get secrets -A | grep grafana
+# Check External Secrets Operator logs
+kubectl logs -n external-secrets-system deployment/external-secrets
+
+# Check Vault connection
+kubectl get secretstore -A
+```
+
+### Vault issues:
+```bash
+# Check Vault status
+kubectl get pods -n vault
+
+# Check Vault logs
+kubectl logs -n vault vault-0
+
+# Check Vault initialization jobs
+kubectl get jobs -n vault
+
+# Access Vault CLI
+kubectl exec -it -n vault vault-0 -- vault status
 ```
 
 ## Next Steps
 
 1. **Deploy ArgoCD** using the steps above
-2. **Monitor all applications** in ArgoCD UI
-3. **Update credentials** for Grafana Cloud and Loki
-4. **Configure ArgoCD notifications** (Slack, etc.)
-5. **Set up ArgoCD RBAC** if needed
-6. **Configure ArgoCD SSO** if desired
-7. **Remove FluxCD components** once everything is working
+2. **Monitor Vault initialization** in ArgoCD UI
+3. **Update placeholder secrets** in Vault with real values
+4. **Monitor all applications** in ArgoCD UI
+5. **Configure ArgoCD notifications** (Slack, etc.)
+6. **Set up ArgoCD RBAC** if needed
+7. **Configure ArgoCD SSO** if desired
+8. **Remove FluxCD components** once everything is working
 
 ## Cleanup Old FluxCD
 
