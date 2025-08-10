@@ -19,7 +19,7 @@ spec:
         destinations:
           - name: grafana-cloud-metrics
             type: prometheus
-            url: https://prometheus-prod-56-prod-us-east-2.grafana.net./api/prom/push
+            url: https://prometheus-prod-56-prod-us-east-2.grafana.net/api/prom/push
             auth:
               type: basic
               username: "2600859"
@@ -30,7 +30,7 @@ spec:
 
           - name: grafana-cloud-logs
             type: loki
-            url: https://logs-prod-036.grafana.net./loki/api/v1/push
+            url: https://logs-prod-036.grafana.net/loki/api/v1/push
             auth:
               type: basic
               username: "1296106"
@@ -41,7 +41,7 @@ spec:
 
           - name: grafana-cloud-otlp-endpoint
             type: otlp
-            url: https://otlp-gateway-prod-us-east-2.grafana.net./otlp
+            url: https://otlp-gateway-prod-us-east-2.grafana.net/otlp
             protocol: http
             auth:
               type: basic
@@ -59,7 +59,7 @@ spec:
 
           - name: grafana-cloud-profiles
             type: pyroscope
-            url: https://profiles-prod-001.grafana.net.:443
+            url: https://profiles-prod-001.grafana.net:443
             auth:
               type: basic
               username: "1338312"
@@ -79,7 +79,7 @@ spec:
               prometheus:
                 existingSecretName: grafana-cloud-metrics-grafana-k8s-monitoring
                 external:
-                  url: https://prometheus-prod-56-prod-us-east-2.grafana.net./api/prom
+                  url: https://prometheus-prod-56-prod-us-east-2.grafana.net/api/prom
           kepler:
             enabled: true
 
