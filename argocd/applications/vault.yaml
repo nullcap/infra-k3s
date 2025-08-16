@@ -20,16 +20,7 @@ spec:
           extraEnvironmentVars:
             VAULT_SKIP_VERIFY: "true"
           
-          # Inject unseal key from secret
-          extraSecretEnvironmentVars:
-            - envName: VAULT_UNSEAL_KEY
-              secretName: vault-init-secret
-              secretKey: unseal-key
-          
-          # Unseal configuration
-          unsealConfig:
-            secretName: vault-init-secret
-            secretKey: unseal-key
+
           
           # Storage configuration
           storage:
@@ -67,9 +58,17 @@ spec:
               if vault status | grep -q "Sealed.*false"; then
                 echo "Vault is already unsealed"
               else
+                echo "Waiting for vault-init-secret to be available..."
+                # Wait for the secret to be created by vault-init job
+                until kubectl get secret vault-init-secret -o jsonpath='{.data.unseal-key}' 2>/dev/null; do
+                  echo "Waiting for vault-init-secret..."
+                  sleep 10
+                done
+                
                 echo "Auto-unsealing Vault..."
-                # Get unseal key from environment variable
-                vault operator unseal "$VAULT_UNSEAL_KEY"
+                # Get unseal key from secret
+                UNSEAL_KEY=$(kubectl get secret vault-init-secret -o jsonpath='{.data.unseal-key}' | base64 -d)
+                vault operator unseal "$UNSEAL_KEY"
               fi
               
               # Enable KV secrets engine
