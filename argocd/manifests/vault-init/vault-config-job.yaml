@@ -63,8 +63,8 @@ spec:
           # Create Kubernetes auth role
           echo "Creating Kubernetes auth role..."
           vault write auth/kubernetes/role/external-secrets \
-            bound_service_account_names=external-secrets-sa \
-            bound_service_account_namespaces=default,monitoring \
+            bound_service_account_names=external-secrets \
+            bound_service_account_namespaces=external-secrets-system \
             policies=external-secrets \
             ttl=1h
           
