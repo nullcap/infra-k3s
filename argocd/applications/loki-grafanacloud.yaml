@@ -29,6 +29,10 @@ spec:
 
         promtail:
           enabled: true
+          command:
+            - /usr/bin/promtail
+            - -config.expand-env=true
+            - -config.file=/etc/promtail/promtail.yaml
           config:
             logLevel: info
             serverPort: 3101
@@ -36,10 +40,13 @@ spec:
               - url: https://logs-prod-036.grafana.net/loki/api/v1/push
                 basic_auth:
                   username: "1296106"
-                  passwordFrom:
-                    secretKeyRef:
-                      name: grafana-k8s-monitoring-secrets
-                      key: logs_api
+                  password: "${GRAFANA_LOGS_API_KEY}"
+          extraEnv:
+            - name: GRAFANA_LOGS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-k8s-monitoring-secrets
+                  key: logs_api
           service:
             enabled: true
             type: ClusterIP
