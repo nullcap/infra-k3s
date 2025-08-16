@@ -13,38 +13,25 @@ spec:
     targetRevision: "0.27.0"
     helm:
       values: |
-        global:
-          enabled: true
-        
         server:
           enabled: true
           
-          # Dev mode for local development
-          dev:
-            enabled: false
+          # Auto-unseal configuration using Kubernetes secret
+          extraEnvironmentVars:
+            VAULT_SKIP_VERIFY: "true"
+          
+          # Inject unseal key from secret
+          extraSecretEnvironmentVars:
+            - envName: VAULT_UNSEAL_KEY
+              secretName: vault-init-secret
+              secretKey: unseal-key
           
           # Unseal configuration
           unsealConfig:
             secretName: vault-init-secret
             secretKey: unseal-key
           
-          # Service configuration
-          service:
-            enabled: true
-            type: ClusterIP
-          
-          # Ingress configuration
-          ingress:
-            enabled: true
-            ingressClassName: traefik
-            annotations:
-              traefik.ingress.kubernetes.io/router.entrypoints: web
-            path: /
-            pathType: Prefix
-            hosts:
-              - vault.local
-          
-          # Storage configuration (using NFS)
+          # Storage configuration
           storage:
             file:
               path: /vault/data
@@ -61,48 +48,48 @@ spec:
             annotations:
               vault.hashicorp.com/role: "vault"
           
-          # Security context
-          securityContext:
-            runAsNonRoot: true
-            runAsUser: 1000
-            fsGroup: 1000
-          
-          # Resources
-          resources:
-            limits:
-              cpu: 500m
-              memory: 512Mi
-            requests:
-              cpu: 250m
-              memory: 256Mi
-          
-          # Extra environment variables
-          extraEnvironmentVars:
-            VAULT_SKIP_VERIFY: "true"
-          
           # Enable built-in Kubernetes auth configuration
           authDelegator:
             enabled: true
           
-          # HA configuration (disabled for dev)
-          ha:
-            enabled: false
+          # Auto-unseal and enable KV secrets engine
+          postStart:
+            - /bin/sh
+            - -c
+            - |
+              # Wait for Vault to be ready
+              until vault status; do
+                echo "Waiting for Vault to be ready..."
+                sleep 5
+              done
+              
+              # Check if Vault is already unsealed
+              if vault status | grep -q "Sealed.*false"; then
+                echo "Vault is already unsealed"
+              else
+                echo "Auto-unsealing Vault..."
+                # Get unseal key from environment variable
+                vault operator unseal "$VAULT_UNSEAL_KEY"
+              fi
+              
+              # Enable KV secrets engine
+              vault secrets enable -path=secret kv-v2 || true
           
           # UI configuration
           ui:
             enabled: true
           
-          # Audit logging
-          auditStorage:
-            enabled: false
-          
-          # Metrics
-          metrics:
+          # Ingress configuration
+          ingress:
             enabled: true
-            service:
-              annotations:
-                prometheus.io/scrape: "true"
-                prometheus.io/port: "9102"
+            ingressClassName: traefik
+            annotations:
+              traefik.ingress.kubernetes.io/router.entrypoints: web
+            hosts:
+              - host: vault.local
+                paths:
+                  - path: /
+                    pathType: ImplementationSpecific
         
         # Disable injector since we're using External Secrets
         injector:
