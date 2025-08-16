@@ -54,10 +54,12 @@ spec:
             enabled: true
             existingClaim: vault-pvc
           
-          # Service account
+          # Service account with Vault role annotation
           serviceAccount:
             create: true
             name: vault
+            annotations:
+              vault.hashicorp.com/role: "vault"
           
           # Security context
           securityContext:
@@ -78,6 +80,10 @@ spec:
           extraEnvironmentVars:
             VAULT_SKIP_VERIFY: "true"
           
+          # Enable built-in Kubernetes auth configuration
+          authDelegator:
+            enabled: true
+          
           # HA configuration (disabled for dev)
           ha:
             enabled: false
@@ -97,6 +103,10 @@ spec:
               annotations:
                 prometheus.io/scrape: "true"
                 prometheus.io/port: "9102"
+        
+        # Disable injector since we're using External Secrets
+        injector:
+          enabled: false
   destination:
     namespace: vault
     server: https://kubernetes.default.svc

@@ -3,4 +3,4 @@ kind: Kustomization
 
 resources:
   - vault-init-job.yaml
-  - vault-config-job.yaml
+  - vault-secrets-init-job.yaml
