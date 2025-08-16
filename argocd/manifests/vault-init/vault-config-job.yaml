@@ -71,15 +71,7 @@ spec:
           # Create placeholder secrets (these will be replaced with actual values)
           echo "Creating placeholder secrets..."
           vault kv put secret/grafana-cloud \
-            metrics-password="placeholder" \
-            logs-password="placeholder" \
-            otlp-password="placeholder" \
-            profiles-password="placeholder" \
-            fm-password="placeholder"
-          
-          vault kv put secret/grafana \
-            admin-user="admin" \
-            admin-password="placeholder"
+            access-policy-token="placeholder"
           
           vault kv put secret/slack \
             api-url="placeholder"

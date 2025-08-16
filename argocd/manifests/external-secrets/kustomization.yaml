@@ -3,6 +3,6 @@ kind: Kustomization
 
 resources:
   - service-account.yaml
-  - vault-secret-store.yaml
   - cluster-secret-store.yaml
   - grafana-cloud-secrets.yaml
+  - rbac.yaml

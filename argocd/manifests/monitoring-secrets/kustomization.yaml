@@ -1,5 +1,0 @@
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-
-# This directory is now empty as we've migrated to External Secrets + Vault
-# The sealed secrets have been removed and replaced with External Secrets configuration
