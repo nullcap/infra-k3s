@@ -26,7 +26,7 @@ spec:
               passwordFrom:
                 secretKeyRef:
                   name: grafana-k8s-monitoring-secrets
-                  key: metrics_password
+                  key: metrics_api
 
           - name: grafana-cloud-logs
             type: loki
@@ -37,7 +37,7 @@ spec:
               passwordFrom:
                 secretKeyRef:
                   name: grafana-k8s-monitoring-secrets
-                  key: logs_password
+                  key: logs_api
 
           - name: grafana-cloud-otlp-endpoint
             type: otlp
@@ -49,7 +49,7 @@ spec:
               passwordFrom:
                 secretKeyRef:
                   name: grafana-k8s-monitoring-secrets
-                  key: otlp_password
+                  key: otlp_api
             metrics:
               enabled: true
             logs:
@@ -66,7 +66,7 @@ spec:
               passwordFrom:
                 secretKeyRef:
                   name: grafana-k8s-monitoring-secrets
-                  key: profiles_password
+                  key: profiles_api
 
         clusterMetrics:
           enabled: true
@@ -133,7 +133,7 @@ spec:
               passwordFrom:
                 secretKeyRef:
                   name: grafana-k8s-monitoring-secrets
-                  key: fm_password
+                  key: fm_api
 
         alloy-singleton:
           enabled: true
@@ -146,7 +146,7 @@ spec:
               passwordFrom:
                 secretKeyRef:
                   name: grafana-k8s-monitoring-secrets
-                  key: fm_password
+                  key: fm_api
 
         alloy-logs:
           enabled: true
@@ -159,7 +159,7 @@ spec:
               passwordFrom:
                 secretKeyRef:
                   name: grafana-k8s-monitoring-secrets
-                  key: fm_password
+                  key: fm_api
 
         alloy-receiver:
           enabled: true
@@ -186,7 +186,7 @@ spec:
               passwordFrom:
                 secretKeyRef:
                   name: grafana-k8s-monitoring-secrets
-                  key: fm_password
+                  key: fm_api
 
         alloy-profiles:
           enabled: true
@@ -199,7 +199,7 @@ spec:
               passwordFrom:
                 secretKeyRef:
                   name: grafana-k8s-monitoring-secrets
-                  key: fm_password
+                  key: fm_api
   destination:
     namespace: default
     server: https://kubernetes.default.svc

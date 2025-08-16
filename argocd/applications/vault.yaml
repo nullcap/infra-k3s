@@ -36,13 +36,13 @@ spec:
           # Ingress configuration
           ingress:
             enabled: true
+            ingressClassName: traefik
             annotations:
               traefik.ingress.kubernetes.io/router.entrypoints: web
+            path: /
+            pathType: Prefix
             hosts:
-              - host: vault.local
-                paths:
-                  - path: /
-                    pathType: Prefix
+              - vault.local
           
           # Storage configuration (using NFS)
           storage:
