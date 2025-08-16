@@ -33,10 +33,13 @@ spec:
             logLevel: info
             serverPort: 3101
             clients:
-              - url: https://logs-prod3.grafana.net/loki/api/v1/push
+              - url: https://logs-prod-036.grafana.net/loki/api/v1/push
                 basic_auth:
-                  username: "your-grafana-loki-username"
-                  password: "your-grafana-loki-api-key"
+                  username: "1296106"
+                  passwordFrom:
+                    secretKeyRef:
+                      name: grafana-k8s-monitoring-secrets
+                      key: logs_api
           service:
             enabled: true
             type: ClusterIP
