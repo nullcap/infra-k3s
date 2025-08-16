@@ -87,9 +87,6 @@ spec:
               traefik.ingress.kubernetes.io/router.entrypoints: web
             hosts:
               - host: vault.local
-                paths:
-                  - path: /
-                    pathType: ImplementationSpecific
         
         # Disable injector since we're using External Secrets
         injector:
