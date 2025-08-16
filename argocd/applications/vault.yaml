@@ -27,11 +27,6 @@ spec:
             file:
               path: /vault/data
           
-          # Persistence configuration
-          persistence:
-            enabled: true
-            existingClaim: vault-pvc
-          
           # Service account with Vault role annotation
           serviceAccount:
             create: true
