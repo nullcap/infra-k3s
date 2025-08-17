@@ -38,6 +38,9 @@ spec:
           authDelegator:
             enabled: true
           
+          # Disable readiness probe during initialization
+          readinessProbe: null
+          
           # Auto-unseal and enable KV secrets engine
           postStart:
             - /bin/sh
