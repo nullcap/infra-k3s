@@ -17,8 +17,8 @@ spec:
         - /bin/sh
         - -c
         - |
-          # Wait for Vault to be ready
-          until vault status; do
+          # Wait for Vault to be ready (available, not necessarily unsealed)
+          until vault status 2>/dev/null | grep -q "Version"; do
             echo "Waiting for Vault to be ready..."
             sleep 5
           done
