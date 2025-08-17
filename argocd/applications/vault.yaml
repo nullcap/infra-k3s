@@ -8,9 +8,55 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/nullcap/infra-k3s.git
-    targetRevision: main
-    path: argocd/manifests
+    repoURL: https://helm.releases.hashicorp.com
+    chart: vault
+    targetRevision: "0.27.0"
+    helm:
+      values: |
+        server:
+          enabled: true
+          
+          # Auto-unseal configuration using Kubernetes secret
+          extraEnvironmentVars:
+            VAULT_SKIP_VERIFY: "true"
+          
+          # Configure auto-unseal using Kubernetes secret
+          unsealConfig:
+            secretName: vault-unseal-keys
+            secretKey: unseal-keys
+          
+          # Storage configuration
+          storage:
+            file:
+              path: /vault/data
+          
+          # Service account with Vault role annotation
+          serviceAccount:
+            create: true
+            name: vault
+            annotations:
+              vault.hashicorp.com/role: "vault"
+          
+          # Enable built-in Kubernetes auth configuration
+          authDelegator:
+            enabled: true
+          
+          # UI configuration
+          ui:
+            enabled: true
+          
+          # Ingress configuration
+          ingress:
+            enabled: true
+            ingressClassName: traefik
+            annotations:
+              traefik.ingress.kubernetes.io/router.entrypoints: web
+            hosts:
+              - host: vault.local
+        
+        # Disable injector since we're using External Secrets
+        injector:
+          enabled: false
   destination:
     namespace: vault
     server: https://kubernetes.default.svc

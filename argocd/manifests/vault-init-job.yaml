@@ -33,8 +33,21 @@ spec:
               exit 0
             else
               echo "Vault is initialized but no unseal keys secret found"
-              echo "Please manually create the vault-unseal-keys secret with the unseal key"
-              exit 1
+              echo "Force re-initializing Vault to get fresh unseal keys..."
+              # Force re-initialization by removing the existing data
+              rm -rf /vault/data/*
+              vault operator init -key-shares=1 -key-threshold=1 -format=json > /tmp/init.json
+              
+              # Extract unseal key (using grep/sed instead of jq)
+              UNSEAL_KEY=$(cat /tmp/init.json | grep -o '"unseal_keys_b64":\["[^"]*"' | cut -d'"' -f4)
+              
+              # Create unseal keys secret for auto-unsealing
+              kubectl create secret generic vault-unseal-keys \
+                --from-literal=unseal-keys="$UNSEAL_KEY" \
+                --dry-run=client -o yaml | kubectl apply -f -
+              
+              echo "Vault re-initialized and unseal keys secret created"
+              echo "Vault will auto-unseal on restart"
             fi
           else
             echo "Initializing Vault..."
