@@ -38,9 +38,11 @@ spec:
           authDelegator:
             enabled: true
           
+
+          
           # Use default readiness probe configuration
           
-          # Let vault-init job handle initialization instead of postStart hook
+          # Let the vault-init job handle initialization and unsealing
           
           # UI configuration
           ui:

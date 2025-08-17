@@ -12,7 +12,7 @@ spec:
       serviceAccountName: vault-init-sa
       containers:
       - name: vault-init
-        image: bitnami/kubectl:latest
+        image: hashicorp/vault:1.15.0
         command:
         - /bin/sh
         - -c
@@ -24,27 +24,52 @@ spec:
           done
           
           # Check if Vault is already initialized
-          if vault status | grep -q "Initialized.*true"; then
+          if vault status 2>/dev/null | grep -q "Initialized.*true"; then
             echo "Vault is already initialized"
-            exit 0
+            
+            # Check if Vault is already unsealed
+            if vault status 2>/dev/null | grep -q "Sealed.*false"; then
+              echo "Vault is already unsealed"
+              exit 0
+            fi
+            
+            # Vault is initialized but sealed - we need to unseal it
+            echo "Vault is initialized but sealed. Checking for unseal key..."
+            if kubectl get secret vault-init-secret -o jsonpath='{.data.unseal-key}' 2>/dev/null; then
+              echo "Found existing unseal key, unsealing Vault..."
+              UNSEAL_KEY=$(kubectl get secret vault-init-secret -o jsonpath='{.data.unseal-key}' | base64 -d)
+              vault operator unseal "$UNSEAL_KEY"
+              echo "Vault unsealed successfully"
+              
+              # Enable KV secrets engine
+              vault secrets enable -path=secret kv-v2 || true
+              echo "KV secrets engine enabled"
+            else
+              echo "No unseal key found. Vault needs manual unsealing."
+              exit 1
+            fi
+          else
+            echo "Vault is not initialized. Initializing..."
+            vault operator init -key-shares=1 -key-threshold=1 -format=json > /tmp/init.json
+            
+            # Extract root token and unseal key (using grep/sed instead of jq)
+            ROOT_TOKEN=$(cat /tmp/init.json | grep -o '"root_token":"[^"]*"' | cut -d'"' -f4)
+            UNSEAL_KEY=$(cat /tmp/init.json | grep -o '"unseal_keys_b64":\["[^"]*"' | cut -d'"' -f4)
+            
+            # Store in Kubernetes secret
+            kubectl create secret generic vault-init-secret \
+              --from-literal=root-token="$ROOT_TOKEN" \
+              --from-literal=unseal-key="$UNSEAL_KEY" \
+              --dry-run=client -o yaml | kubectl apply -f -
+            
+            # Unseal Vault
+            vault operator unseal "$UNSEAL_KEY"
+            
+            # Enable KV secrets engine
+            vault secrets enable -path=secret kv-v2 || true
+            
+            echo "Vault initialized and unsealed successfully"
           fi
-          
-          # Initialize Vault
-          echo "Initializing Vault..."
-          vault operator init -key-shares=1 -key-threshold=1 -format=json > /tmp/init.json
-          
-          # Extract root token and unseal key
-          ROOT_TOKEN=$(cat /tmp/init.json | jq -r '.root_token')
-          UNSEAL_KEY=$(cat /tmp/init.json | jq -r '.unseal_keys_b64[0]')
-          
-          # Store in Kubernetes secret
-          kubectl create secret generic vault-init-secret \
-            --from-literal=root-token="$ROOT_TOKEN" \
-            --from-literal=unseal-key="$UNSEAL_KEY" \
-            --dry-run=client -o yaml | kubectl apply -f -
-          
-          echo "Vault initialized successfully"
-          echo "Root token and unseal key stored in vault-init-secret"
         env:
         - name: VAULT_ADDR
           value: "http://vault.vault.svc.cluster.local:8200"
