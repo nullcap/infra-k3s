@@ -40,11 +40,7 @@ spec:
           
           # Configure readiness probe to be more lenient during initialization
           readinessProbe:
-            exec:
-              command:
-                - /bin/sh
-                - -ec
-                - vault status -tls-skip-verify || exit 0
+            enabled: true
             failureThreshold: 30
             initialDelaySeconds: 30
             periodSeconds: 10
