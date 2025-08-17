@@ -12,7 +12,7 @@ spec:
       serviceAccountName: vault-init-sa
       containers:
       - name: vault-init
-        image: hashicorp/vault:1.15.0
+        image: bitnami/kubectl:latest
         command:
         - /bin/sh
         - -c
