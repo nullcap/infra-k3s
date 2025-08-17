@@ -25,8 +25,6 @@ spec:
             secretName: vault-unseal-keys
             secretKey: unseal-keys
           
-
-          
           # Storage configuration
           storage:
             file:
@@ -42,8 +40,6 @@ spec:
           # Enable built-in Kubernetes auth configuration
           authDelegator:
             enabled: true
-          
-
           
           # Use default readiness probe configuration
           
