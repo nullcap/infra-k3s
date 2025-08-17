@@ -20,6 +20,11 @@ spec:
           extraEnvironmentVars:
             VAULT_SKIP_VERIFY: "true"
           
+          # Configure auto-unseal using Kubernetes secret
+          unsealConfig:
+            secretName: vault-unseal-keys
+            secretKey: unseal-keys
+          
 
           
           # Storage configuration

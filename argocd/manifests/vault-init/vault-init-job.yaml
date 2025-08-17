@@ -17,7 +17,7 @@ spec:
         - /bin/sh
         - -c
         - |
-          # Wait for Vault to be ready (available, not necessarily unsealed)
+          # Wait for Vault to be ready
           until vault status 2>/dev/null | grep -q "Version"; do
             echo "Waiting for Vault to be ready..."
             sleep 5
@@ -27,48 +27,29 @@ spec:
           if vault status 2>/dev/null | grep -q "Initialized.*true"; then
             echo "Vault is already initialized"
             
-            # Check if Vault is already unsealed
-            if vault status 2>/dev/null | grep -q "Sealed.*false"; then
-              echo "Vault is already unsealed"
+            # Check if unseal keys secret exists
+            if kubectl get secret vault-unseal-keys 2>/dev/null; then
+              echo "Unseal keys secret already exists"
               exit 0
-            fi
-            
-            # Vault is initialized but sealed - we need to unseal it
-            echo "Vault is initialized but sealed. Checking for unseal key..."
-            if kubectl get secret vault-init-secret -o jsonpath='{.data.unseal-key}' 2>/dev/null; then
-              echo "Found existing unseal key, unsealing Vault..."
-              UNSEAL_KEY=$(kubectl get secret vault-init-secret -o jsonpath='{.data.unseal-key}' | base64 -d)
-              vault operator unseal "$UNSEAL_KEY"
-              echo "Vault unsealed successfully"
-              
-              # Enable KV secrets engine
-              vault secrets enable -path=secret kv-v2 || true
-              echo "KV secrets engine enabled"
             else
-              echo "No unseal key found. Vault needs manual unsealing."
+              echo "Vault is initialized but no unseal keys secret found"
+              echo "Please manually create the vault-unseal-keys secret with the unseal key"
               exit 1
             fi
           else
-            echo "Vault is not initialized. Initializing..."
+            echo "Initializing Vault..."
             vault operator init -key-shares=1 -key-threshold=1 -format=json > /tmp/init.json
             
-            # Extract root token and unseal key (using grep/sed instead of jq)
-            ROOT_TOKEN=$(cat /tmp/init.json | grep -o '"root_token":"[^"]*"' | cut -d'"' -f4)
+            # Extract unseal key (using grep/sed instead of jq)
             UNSEAL_KEY=$(cat /tmp/init.json | grep -o '"unseal_keys_b64":\["[^"]*"' | cut -d'"' -f4)
             
-            # Store in Kubernetes secret
-            kubectl create secret generic vault-init-secret \
-              --from-literal=root-token="$ROOT_TOKEN" \
-              --from-literal=unseal-key="$UNSEAL_KEY" \
+            # Create unseal keys secret for auto-unsealing
+            kubectl create secret generic vault-unseal-keys \
+              --from-literal=unseal-keys="$UNSEAL_KEY" \
               --dry-run=client -o yaml | kubectl apply -f -
             
-            # Unseal Vault
-            vault operator unseal "$UNSEAL_KEY"
-            
-            # Enable KV secrets engine
-            vault secrets enable -path=secret kv-v2 || true
-            
-            echo "Vault initialized and unsealed successfully"
+            echo "Vault initialized and unseal keys secret created"
+            echo "Vault will auto-unseal on restart"
           fi
         env:
         - name: VAULT_ADDR
@@ -92,9 +73,6 @@ rules:
 - apiGroups: [""]
   resources: ["secrets"]
   verbs: ["create", "get", "update"]
-- apiGroups: [""]
-  resources: ["pods"]
-  verbs: ["get", "list"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
