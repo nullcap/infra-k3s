@@ -1,4 +1,5 @@
 # Namespaces are configured in a seperate file so we can configure things before deployments.
+# Note: archivetw, vault, monitoring, and external-secrets-system namespaces are managed by their respective apps
 ---
 apiVersion: v1
 kind: Namespace
@@ -8,24 +9,9 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-    name: monitoring
----
-apiVersion: v1
-kind: Namespace
-metadata:
     name: pubnet
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
-    name: archivetw
----
-apiVersion: v1
-kind: Namespace
-metadata:
     name: tailscale
----
-apiVersion: v1
-kind: Namespace
-metadata:
-    name: vault
