@@ -6,5 +6,4 @@ resources:
   - alertmanagerconfigs.yaml
   - role-prometheus-adapter.yaml
   - traefik-helm-extra.yaml
-  - vault-pv.yaml
   - monitoring-pvs.yaml
