@@ -3,9 +3,7 @@ kind: Job
 metadata:
   name: vault-init
   namespace: vault
-  annotations:
-    argocd.argoproj.io/hook: PreSync
-    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+  annotations: {}
 spec:
   template:
     spec:
