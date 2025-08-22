@@ -6,3 +6,4 @@ resources:
   - cluster-secret-store.yaml
   - grafana-cloud-secrets.yaml
   - rbac.yaml
+  - vault-config-job.yaml
