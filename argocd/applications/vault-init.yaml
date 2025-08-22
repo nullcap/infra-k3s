@@ -9,7 +9,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/nullcap/infra-k3s.git
-    path: argocd/manifests/vault
+    path: argocd/manifests
     targetRevision: HEAD
   destination:
     namespace: vault
