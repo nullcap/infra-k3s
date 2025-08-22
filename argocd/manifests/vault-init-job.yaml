@@ -54,22 +54,31 @@ spec:
               exit 0
             else
               echo "Vault is initialized but no unseal keys secret found"
-              echo "Since you provided the unseal key, creating the secret..."
+              echo "Attempting to re-initialize Vault..."
               
-              # Use the known unseal key
-              UNSEAL_KEY="BdlgDpU+5FUp4ourB9kFOezbYs9Ih0wmpOj6Xhp267Q="
+              # Try to delete the PVC to force re-initialization
+              echo "Deleting Vault PVC to force re-initialization..."
+              kubectl delete pvc data-vault-0 -n vault --ignore-not-found=true
               
-              # Create the secret
-              kubectl create secret generic vault-unseal-keys \
-                --from-literal=unseal-keys="$UNSEAL_KEY" \
-                --dry-run=client -o yaml | kubectl apply -f -
+              # Wait for PVC to be deleted and pod to restart
+              echo "Waiting for Vault pod to restart..."
+              sleep 30
               
-              echo "Unseal keys secret created"
+              # Wait for Vault to be ready again
+              until vault status 2>/dev/null | grep -q "Version"; do
+                echo "Waiting for Vault to be ready after restart..."
+                sleep 10
+              done
               
-              # Unseal Vault
-              echo "Unsealing Vault..."
-              vault operator unseal "$UNSEAL_KEY"
-              echo "Vault unsealed successfully"
+              # Check if Vault is now uninitialized
+              if vault status 2>/dev/null | grep -q "Initialized.*false"; then
+                echo "Vault is now uninitialized, proceeding with initialization..."
+                # This will be handled by the else block below
+              else
+                echo "Vault is still initialized, cannot proceed automatically"
+                echo "Please manually delete the Vault PVC and restart this job"
+                exit 1
+              fi
             fi
           else
             echo "Initializing Vault..."
