@@ -17,6 +17,11 @@ spec:
         - /bin/sh
         - -c
         - |
+          # Install vault CLI
+          curl -fsSL https://releases.hashicorp.com/vault/1.15.2/vault_1.15.2_linux_amd64.zip -o vault.zip
+          unzip vault.zip
+          mv vault /usr/local/bin/
+          
           # Wait for Vault to be ready
           until vault status 2>/dev/null | grep -q "Version"; do
             echo "Waiting for Vault to be ready..."
@@ -30,14 +35,35 @@ spec:
             # Check if unseal keys secret exists
             if kubectl get secret vault-unseal-keys 2>/dev/null; then
               echo "Unseal keys secret already exists"
+              
+              # Check if Vault is sealed and unseal it
+              if vault status 2>/dev/null | grep -q "Sealed.*true"; then
+                echo "Vault is sealed, attempting to unseal..."
+                UNSEAL_KEY=$(kubectl get secret vault-unseal-keys -o jsonpath='{.data.unseal-keys}' | base64 -d)
+                vault operator unseal "$UNSEAL_KEY"
+                echo "Vault unsealed successfully"
+              else
+                echo "Vault is already unsealed"
+              fi
               exit 0
             else
               echo "Vault is initialized but no unseal keys secret found"
-              echo "Cannot re-initialize Vault when it's already initialized."
-              echo "Please manually unseal Vault and create the vault-unseal-keys secret."
-              echo "You can run: kubectl exec vault-0 -n vault -- vault operator unseal <UNSEAL_KEY>"
-              echo "Then create the secret with: kubectl create secret generic vault-unseal-keys -n vault --from-literal=unseal-keys=<UNSEAL_KEY>"
-              exit 1
+              echo "Since you provided the unseal key, creating the secret..."
+              
+              # Use the known unseal key
+              UNSEAL_KEY="BdlgDpU+5FUp4ourB9kFOezbYs9Ih0wmpOj6Xhp267Q="
+              
+              # Create the secret
+              kubectl create secret generic vault-unseal-keys \
+                --from-literal=unseal-keys="$UNSEAL_KEY" \
+                --dry-run=client -o yaml | kubectl apply -f -
+              
+              echo "Unseal keys secret created"
+              
+              # Unseal Vault
+              echo "Unsealing Vault..."
+              vault operator unseal "$UNSEAL_KEY"
+              echo "Vault unsealed successfully"
             fi
           else
             echo "Initializing Vault..."
