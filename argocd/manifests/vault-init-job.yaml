@@ -12,7 +12,7 @@ spec:
       serviceAccountName: vault-init-sa
       containers:
       - name: vault-init
-        image: hashicorp/vault:1.15.0
+        image: bitnami/kubectl:latest
         command:
         - /bin/sh
         - -c
@@ -33,28 +33,18 @@ spec:
               exit 0
             else
               echo "Vault is initialized but no unseal keys secret found"
-              echo "Force re-initializing Vault to get fresh unseal keys..."
-              # Force re-initialization by removing the existing data
-              rm -rf /vault/data/*
-              vault operator init -key-shares=1 -key-threshold=1 -format=json > /tmp/init.json
-              
-              # Extract unseal key (using grep/sed instead of jq)
-              UNSEAL_KEY=$(cat /tmp/init.json | grep -o '"unseal_keys_b64":\["[^"]*"' | cut -d'"' -f4)
-              
-              # Create unseal keys secret for auto-unsealing
-              kubectl create secret generic vault-unseal-keys \
-                --from-literal=unseal-keys="$UNSEAL_KEY" \
-                --dry-run=client -o yaml | kubectl apply -f -
-              
-              echo "Vault re-initialized and unseal keys secret created"
-              echo "Vault will auto-unseal on restart"
+              echo "Cannot re-initialize Vault when it's already initialized."
+              echo "Please manually unseal Vault and create the vault-unseal-keys secret."
+              echo "You can run: kubectl exec vault-0 -n vault -- vault operator unseal <UNSEAL_KEY>"
+              echo "Then create the secret with: kubectl create secret generic vault-unseal-keys -n vault --from-literal=unseal-keys=<UNSEAL_KEY>"
+              exit 1
             fi
           else
             echo "Initializing Vault..."
             vault operator init -key-shares=1 -key-threshold=1 -format=json > /tmp/init.json
             
-            # Extract unseal key (using grep/sed instead of jq)
-            UNSEAL_KEY=$(cat /tmp/init.json | grep -o '"unseal_keys_b64":\["[^"]*"' | cut -d'"' -f4)
+            # Extract unseal key using jq
+            UNSEAL_KEY=$(cat /tmp/init.json | jq -r '.unseal_keys_b64[0]')
             
             # Create unseal keys secret for auto-unsealing
             kubectl create secret generic vault-unseal-keys \
