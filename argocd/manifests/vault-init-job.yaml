@@ -10,11 +10,19 @@ spec:
       serviceAccountName: vault-init-sa
       containers:
       - name: vault-init
-        image: bitnami/kubectl:latest
+        image: alpine:latest
         command:
         - /bin/sh
         - -c
         - |
+          # Install required tools
+          apk add --no-cache curl unzip jq
+          
+          # Install kubectl
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          mv kubectl /usr/local/bin/
+          
           # Install vault CLI
           curl -fsSL https://releases.hashicorp.com/vault/1.15.2/vault_1.15.2_linux_amd64.zip -o vault.zip
           unzip vault.zip
