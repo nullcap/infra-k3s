@@ -26,12 +26,16 @@ spec:
             VAULT_TRANSIT_TOKEN:
               secretName: vault-autounseal-token
               secretKey: token
-          extraArgs: |
-            -config=/vault/userconfig/vault.hcl
+          args:
+            - server
+            - -config=/vault/userconfig/vault.hcl
           extraVolumes:
-            - type: configMap
-              name: vault-config
-              path: /vault/userconfig
+            - name: vault-config
+              configMap:
+                name: vault-config
+          extraVolumeMounts:
+            - name: vault-config
+              mountPath: /vault/userconfig
           lifecycle:
             postStart: null
           authDelegator:
