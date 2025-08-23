@@ -20,53 +20,42 @@ spec:
           extraEnvironmentVars:
             VAULT_SKIP_VERIFY: "true"
           
-          # Service account
+                    # Service account
           serviceAccount:
             create: true
             name: vault
           
-          # Init container to auto-unseal
-          extraInitContainers:
-            - name: vault-unsealer
-              image: hashicorp/vault:1.15.2
-              command:
-              - /bin/sh
-              - -c
-              - |
-                # Wait for Vault to be ready
-                until vault status 2>/dev/null; do
-                  echo "Waiting for Vault..."
-                  sleep 5
-                done
-                
-                # Check if already unsealed
-                if vault status | grep "Sealed.*false"; then
-                  echo "Vault already unsealed"
-                  exit 0
-                fi
-                
-                # Unseal with key from secret
-                if [ -f /vault/unseal/unseal_key ]; then
-                  echo "Unsealing Vault..."
-                  vault operator unseal "$(cat /vault/unseal/unseal_key)"
-                  echo "Vault unsealed successfully"
-                else
-                  echo "No unseal key found - Vault needs to be initialized first"
-                fi
-              env:
-              - name: VAULT_ADDR
-                value: "http://127.0.0.1:8200"
-              volumeMounts:
-              - name: vault-unseal-key
-                mountPath: /vault/unseal
-                readOnly: true
+          # Post-start script for auto-unsealing
+          postStart:
+            - /bin/sh
+            - -c
+            - |
+              # Wait for Vault to be ready
+              until vault status 2>/dev/null; do
+                echo "Waiting for Vault..."
+                sleep 5
+              done
+              
+              # Check if already unsealed
+              if vault status | grep "Sealed.*false"; then
+                echo "Vault already unsealed"
+                exit 0
+              fi
+              
+              # Try to unseal with key from environment
+              if [ -n "$VAULT_UNSEAL_KEY" ]; then
+                echo "Unsealing Vault with environment key..."
+                vault operator unseal "$VAULT_UNSEAL_KEY"
+                echo "Vault unsealed successfully"
+              else
+                echo "No unseal key found in environment"
+              fi
           
-          # Mount the unseal key secret
-          extraVolumes:
-            - name: vault-unseal-key
-              secret:
-                secretName: vault-unseal-keys
-                optional: true
+          # Environment variable for unseal key (will be set from secret)
+          extraSecretEnvironmentVars:
+            - envName: VAULT_UNSEAL_KEY
+              secretName: vault-unseal-keys
+              secretKey: unseal_key
           
           # Enable built-in Kubernetes auth configuration
           authDelegator:
