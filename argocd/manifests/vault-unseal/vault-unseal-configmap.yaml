@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vault-unseal-config
+  namespace: vault-unseal
+data:
+  vault-unseal.hcl: |
+    storage "file" {
+      path = "/vault/data"
+    }
+
+    listener "tcp" {
+      address     = "0.0.0.0:8200"
+      tls_disable = 1
+    }
+
+    # Enable transit secrets engine for auto-unseal
+    secrets "transit" {
+      path = "transit"
+      type = "transit"
+    }
+
+    # Policy for transit operations
+    policy "transit-unseal" {
+      path "transit/keys/unseal-key" {
+        capabilities = ["create", "read", "update", "delete", "list"]
+      }
+      path "transit/keys/unseal-key/encrypt" {
+        capabilities = ["create", "update"]
+      }
+      path "transit/keys/unseal-key/decrypt" {
+        capabilities = ["create", "update"]
+      }
+    }
+
+    # Root token policy (for initial setup)
+    policy "root" {
+      path "*" {
+        capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+      }
+    }

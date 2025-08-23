@@ -1,0 +1,283 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vault-unseal
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/rma/infra-k3s.git
+    targetRevision: HEAD
+    path: argocd/manifests/vault-unseal
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: vault-unseal
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vault-unseal
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vault-unseal
+  namespace: vault-unseal
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: vault-unseal
+  namespace: vault-unseal
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: vault-unseal
+  namespace: vault-unseal
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: vault-unseal
+subjects:
+  - kind: ServiceAccount
+    name: vault-unseal
+    namespace: vault-unseal
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vault-unseal-keys
+  namespace: vault-unseal
+type: Opaque
+data:
+  # This will be populated after first initialization
+  unseal_key: ""
+  root_token: ""
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vault-unseal-config
+  namespace: vault-unseal
+data:
+  vault.hcl: |
+    storage "file" {
+      path = "/vault/file"
+    }
+    
+    listener "tcp" {
+      address     = "0.0.0.0:8200"
+      tls_disable = 1
+    }
+    
+    # Disable the mlock syscall
+    disable_mlock = true
+    
+    # Enable the UI
+    ui = true
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: vault-unseal
+  namespace: vault-unseal
+spec:
+  serviceName: vault-unseal
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vault-unseal
+  template:
+    metadata:
+      labels:
+        app: vault-unseal
+    spec:
+      serviceAccountName: vault-unseal
+      containers:
+        - name: vault-unseal
+          image: hashicorp/vault:1.15.2
+          args:
+            - "server"
+          ports:
+            - containerPort: 8200
+              name: http
+          env:
+            - name: VAULT_ADDR
+              value: "http://127.0.0.1:8200"
+            - name: VAULT_API_ADDR
+              value: "http://0.0.0.0:8200"
+          volumeMounts:
+            - name: vault-unseal-config
+              mountPath: /vault/config
+            - name: vault-unseal-data
+              mountPath: /vault/file
+          readinessProbe:
+            httpGet:
+              path: /v1/sys/health
+              port: 8200
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /v1/sys/health
+              port: 8200
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+            capabilities:
+              add:
+                - IPC_LOCK
+      volumes:
+        - name: vault-unseal-config
+          configMap:
+            name: vault-unseal-config
+  volumeClaimTemplates:
+    - metadata:
+        name: vault-unseal-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 5Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault-unseal
+  namespace: vault-unseal
+spec:
+  selector:
+    app: vault-unseal
+  ports:
+    - name: http
+      port: 8200
+      targetPort: 8200
+  type: ClusterIP
+---
+# Job to initialize the unsealing Vault and set up transit
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: vault-unseal-init
+  namespace: vault-unseal
+spec:
+  template:
+    spec:
+      serviceAccountName: vault-unseal
+      restartPolicy: OnFailure
+      containers:
+        - name: vault-unseal-init
+          image: hashicorp/vault:1.15.2
+          command:
+            - /bin/sh
+            - -c
+            - |
+              # Wait for Vault to be ready
+              echo "Waiting for Vault to be ready..."
+              until curl -s http://vault-unseal.vault-unseal.svc.cluster.local:8200/v1/sys/health | grep -q "initialized"; do
+                sleep 5
+              done
+              
+              # Check if already initialized
+              if curl -s http://vault-unseal.vault-unseal.svc.cluster.local:8200/v1/sys/health | grep -q '"initialized":true'; then
+                echo "Vault already initialized"
+                
+                # Get the root token from the secret
+                ROOT_TOKEN=$(kubectl get secret vault-unseal-keys -n vault-unseal -o jsonpath='{.data.root_token}' | base64 -d)
+                export VAULT_TOKEN="$ROOT_TOKEN"
+                
+                # Check if transit is already enabled
+                if vault secrets list | grep -q transit; then
+                  echo "Transit already enabled"
+                else
+                  echo "Enabling transit secrets engine..."
+                  vault secrets enable transit
+                  
+                  # Create the autounseal key
+                  vault write -f transit/keys/autounseal
+                  
+                  # Create a policy for the main Vault to use
+                  vault policy write autounseal - <<EOF
+                  path "transit/encrypt/autounseal" {
+                    capabilities = ["update"]
+                  }
+                  path "transit/decrypt/autounseal" {
+                    capabilities = ["update"]
+                  }
+                  EOF
+                  
+                  # Create a token for the main Vault
+                  TOKEN_RESPONSE=$(vault token create -policy=autounseal -format=json)
+                  AUTOSEAL_TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.auth.client_token')
+                  
+                  echo "Auto-unseal token created: $AUTOSEAL_TOKEN"
+                  echo "This token should be used in the main Vault's transit seal configuration"
+                fi
+                
+                exit 0
+              fi
+              
+              # Initialize Vault (one-time only)
+              echo "Initializing unsealing Vault..."
+              INIT_RESPONSE=$(vault operator init -key-shares=1 -key-threshold=1 -format=json)
+              
+              # Extract keys and token
+              UNSEAL_KEY=$(echo "$INIT_RESPONSE" | jq -r '.keys[0]')
+              ROOT_TOKEN=$(echo "$INIT_RESPONSE" | jq -r '.root_token')
+              
+              # Store keys in Kubernetes secret
+              kubectl patch secret vault-unseal-keys -n vault-unseal --type='merge' -p="{\"data\":{\"unseal_key\":\"$(echo -n "$UNSEAL_KEY" | base64)\",\"root_token\":\"$(echo -n "$ROOT_TOKEN" | base64)\"}}"
+              
+              # Unseal Vault
+              echo "Unsealing Vault..."
+              vault operator unseal "$UNSEAL_KEY"
+              
+              # Set root token
+              export VAULT_TOKEN="$ROOT_TOKEN"
+              
+              # Enable transit secrets engine
+              echo "Enabling transit secrets engine..."
+              vault secrets enable transit
+              
+              # Create the autounseal key
+              vault write -f transit/keys/autounseal
+              
+              # Create a policy for the main Vault to use
+              vault policy write autounseal - <<EOF
+              path "transit/encrypt/autounseal" {
+                capabilities = ["update"]
+              }
+              path "transit/decrypt/autounseal" {
+                capabilities = ["update"]
+              }
+              EOF
+              
+              # Create a token for the main Vault
+              TOKEN_RESPONSE=$(vault token create -policy=autounseal -format=json)
+              AUTOSEAL_TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.auth.client_token')
+              
+              echo "Unsealing Vault initialization completed"
+              echo "Root Token: $ROOT_TOKEN"
+              echo "Unseal Key: $UNSEAL_KEY"
+              echo "Auto-unseal token: $AUTOSEAL_TOKEN"
+              echo ""
+              echo "IMPORTANT: Use the auto-unseal token in the main Vault's transit seal configuration"

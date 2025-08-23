@@ -1,8 +1,8 @@
 apiVersion: helm.cattle.io/v1
 kind: HelmChartConfig
 metadata:
-  name: vault
-  namespace: vault
+  name: vault-unseal
+  namespace: vault-unseal
 spec:
   valuesContent: |-
     global:
@@ -17,38 +17,25 @@ spec:
       
       serviceAccount:
         create: true
-        name: vault
+        name: vault-unseal
       
-      # Auto-unseal configuration using transit pattern
-      extraEnvironmentVars:
-        VAULT_ADDR: "http://127.0.0.1:8200"
-        VAULT_SKIP_VERIFY: "true"
-      
-      # Transit auto-unseal configuration
+      # Use custom configuration
       extraArgs: |
-        -config=/vault/userconfig/vault.hcl
+        -config=/vault/userconfig/vault-unseal.hcl
       
       extraVolumes:
         - type: configMap
-          name: vault-config
+          name: vault-unseal-config
           path: /vault/userconfig
       
-      # Disable the problematic postStart hooks
-      lifecycle:
-        postStart: null
-      
-      # Enable built-in Kubernetes auth configuration
-      authDelegator:
-        enabled: true
-      
-      # Disable readiness probe during unsealing
+      # Disable readiness probe during initialization
       readinessProbe:
         enabled: false
       
       # Use filesystem storage for simplicity
       dataStorage:
         enabled: true
-        size: 10Gi
+        size: 5Gi
         storageClass: ""
       
       # Disable HA for single-node setup
