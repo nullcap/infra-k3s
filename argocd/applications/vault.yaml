@@ -27,11 +27,7 @@ spec:
           
 
           
-          # Environment variable for unseal key (will be set from secret)
-          extraSecretEnvironmentVars:
-            - envName: VAULT_UNSEAL_KEY
-              secretName: vault-unseal-keys
-              secretKey: unseal_key
+
           
           # Enable built-in Kubernetes auth configuration
           authDelegator:
