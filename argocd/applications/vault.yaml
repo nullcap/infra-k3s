@@ -6,9 +6,46 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/rma/infra-k3s.git
-    targetRevision: HEAD
-    path: argocd/manifests/vault
+    repoURL: https://charts.bitnami.com/bitnami
+    chart: vault
+    targetRevision: 1.9.0
+    helm:
+      values: |
+        global:
+          enabled: true
+          tlsDisable: true
+        server:
+          enabled: true
+          serviceAccount:
+            create: true
+            name: vault
+          extraEnvironmentVars:
+            VAULT_ADDR: "http://127.0.0.1:8200"
+            VAULT_SKIP_VERIFY: "true"
+          extraArgs: |
+            -config=/vault/userconfig/vault.hcl
+          extraVolumes:
+            - type: configMap
+              name: vault-config
+              path: /vault/userconfig
+          extraSecretEnvironmentVars:
+            VAULT_TRANSIT_TOKEN:
+              secretName: vault-autounseal-token
+              secretKey: token
+          lifecycle:
+            postStart: null
+          authDelegator:
+            enabled: true
+          readinessProbe:
+            enabled: false
+          dataStorage:
+            enabled: true
+            size: 10Gi
+            storageClass: ""
+          ha:
+            enabled: false
+          ui:
+            enabled: false
   destination:
     server: https://kubernetes.default.svc
     namespace: vault

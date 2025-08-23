@@ -14,13 +14,10 @@ data:
       tls_disable = 1
     }
 
-    # Transit auto-unseal configuration
-    seal "transit" {
-      address     = "http://vault-unseal.vault-unseal.svc.cluster.local:8200"
-      token       = "hvs.placeholder"  # This will be replaced with actual token
-      disable_renewal = "false"
-      key_name    = "unseal-key"
-      mount_path  = "transit/"
+    # Enable transit secrets engine for auto-unseal
+    secrets "transit" {
+      path = "transit"
+      type = "transit"
     }
 
     # Enable Kubernetes auth method
@@ -54,4 +51,13 @@ data:
         policies = ["external-secrets"]
         ttl = "1h"
       }
+    }
+
+    # Auto-unseal using transit secrets engine
+    seal "transit" {
+      address     = "http://127.0.0.1:8200"
+      token       = "env://VAULT_TRANSIT_TOKEN"
+      disable_renewal = "false"
+      key_name    = "autounseal"
+      mount_path  = "transit/"
     }
