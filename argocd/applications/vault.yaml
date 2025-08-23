@@ -25,9 +25,37 @@ spec:
             create: true
             name: vault
           
-
+          # Post-start script for auto-unsealing
+          postStart:
+            - /bin/sh
+            - -c
+            - |
+              # Wait for Vault to be ready
+              until vault status 2>/dev/null; do
+                echo "Waiting for Vault..."
+                sleep 5
+              done
+              
+              # Check if already unsealed
+              if vault status | grep "Sealed.*false"; then
+                echo "Vault already unsealed"
+                exit 0
+              fi
+              
+              # Try to unseal with key from environment
+              if [ -n "$VAULT_UNSEAL_KEY" ]; then
+                echo "Unsealing Vault with environment key..."
+                vault operator unseal "$VAULT_UNSEAL_KEY"
+                echo "Vault unsealed successfully"
+              else
+                echo "No unseal key found in environment"
+              fi
           
-
+          # Environment variable for unseal key (will be set from secret)
+          extraSecretEnvironmentVars:
+            - envName: VAULT_UNSEAL_KEY
+              secretName: vault-unseal-keys
+              secretKey: unseal_key
           
           # Enable built-in Kubernetes auth configuration
           authDelegator:
