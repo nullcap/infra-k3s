@@ -15,11 +15,13 @@ spec:
         - /bin/sh
         - -c
         - |
-          # Wait for Vault to be ready (it will return non-zero when sealed, but that's OK)
-          until vault status 2>/dev/null | grep -q "Version"; do
+          # Wait for Vault to be ready
+          echo "Waiting for Vault to be ready..."
+          while ! vault status 2>/dev/null | grep -q "Version"; do
             echo "Waiting for Vault..."
             sleep 5
           done
+          echo "Vault is ready!"
           
           # Check if already initialized
           if vault status | grep "Initialized.*true"; then
