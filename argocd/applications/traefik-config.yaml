@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: traefik-config
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: traefik-config
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/nullcap/infra-k3s.git
+    targetRevision: main
+    path: argocd/manifests/traefik-config
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
