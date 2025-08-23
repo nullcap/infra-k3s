@@ -30,14 +30,12 @@ spec:
             - /bin/sh
             - -c
             - |
-              # Wait for Vault to be ready
-              until vault status 2>/dev/null; do
-                echo "Waiting for Vault..."
-                sleep 5
-              done
+              # Wait for Vault to be ready (simplified check)
+              echo "Waiting for Vault to be ready..."
+              sleep 10
               
               # Check if already unsealed
-              if vault status | grep "Sealed.*false"; then
+              if vault status 2>/dev/null | grep -q "Sealed.*false"; then
                 echo "Vault already unsealed"
                 exit 0
               fi
