@@ -16,25 +16,14 @@ spec:
         server:
           enabled: true
           
-          # Auto-unseal configuration using Kubernetes secret
+          # Environment variables
           extraEnvironmentVars:
             VAULT_SKIP_VERIFY: "true"
           
-          # Service account with Vault role annotation
+          # Service account
           serviceAccount:
             create: true
             name: vault
-            annotations:
-              vault.hashicorp.com/role: "vault"
-          
-          # RBAC for Vault to read its own secrets
-          rbac:
-            create: true
-            rules:
-              - apiGroups: [""]
-                resources: ["secrets"]
-                resourceNames: ["vault-unseal-keys"]
-                verbs: ["get"]
           
           # Enable built-in Kubernetes auth configuration
           authDelegator:
@@ -68,69 +57,7 @@ spec:
                 path = "/vault/data"
               }
           
-          # Post-start script to configure Vault
-          postStart:
-            - /bin/sh
-            - -c
-            - |
-              # Install kubectl if not available
-              if ! command -v kubectl &> /dev/null; then
-                echo "Installing kubectl..."
-                apk add --no-cache curl
-                curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-                chmod +x kubectl
-                mv kubectl /usr/local/bin/
-              fi
-              
-              # Wait for Vault to be ready and unseal if needed
-              until vault status 2>/dev/null | grep -q "Sealed.*false"; do
-                echo "Vault is sealed, attempting to unseal..."
-                # Get unseal key from secret
-                UNSEAL_KEY=$(kubectl get secret vault-unseal-keys -n vault -o jsonpath='{.data.unseal_key}' | base64 -d)
-                if [ -n "$UNSEAL_KEY" ]; then
-                  echo "Unsealing Vault..."
-                  vault operator unseal "$UNSEAL_KEY"
-                else
-                  echo "No unseal key found, waiting..."
-                  sleep 5
-                fi
-              done
-              
-              # Enable Kubernetes auth if not already enabled
-              if ! vault auth list 2>/dev/null | grep -q "kubernetes/"; then
-                echo "Enabling Kubernetes auth method..."
-                vault auth enable kubernetes
-              fi
-              
-              # Configure Kubernetes auth
-              echo "Configuring Kubernetes auth..."
-              vault write auth/kubernetes/config \
-                kubernetes_host="https://kubernetes.default.svc.cluster.local" \
-                kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-              
-              # Create policy for external-secrets
-              echo "Creating external-secrets policy..."
-              vault policy write external-secrets - <<EOF
-              path "secret/data/*" {
-                capabilities = ["read"]
-              }
-              EOF
-              
-              # Create Kubernetes auth role
-              echo "Creating Kubernetes auth role..."
-              vault write auth/kubernetes/role/external-secrets \
-                bound_service_account_names=external-secrets \
-                bound_service_account_namespaces=external-secrets-system \
-                policies=external-secrets \
-                ttl=1h
-              
-              # Enable KV secrets engine if not already enabled
-              if ! vault secrets list 2>/dev/null | grep -q "secret/"; then
-                echo "Enabling KV secrets engine..."
-                vault secrets enable -path=secret kv-v2
-              fi
-              
-              echo "Vault configuration completed!"
+
         
         # Disable injector since we're using External Secrets
         injector:
