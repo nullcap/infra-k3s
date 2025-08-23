@@ -1,47 +1,62 @@
-apiVersion: helm.cattle.io/v1
-kind: HelmChartConfig
+apiVersion: argoproj.io/v1alpha1
+kind: Application
 metadata:
-  name: vault-unseal
-  namespace: vault-unseal
+  name: vault-unseal-helm
+  namespace: argocd
 spec:
-  valuesContent: |-
-    global:
-      enabled: true
-      tlsDisable: true
-    
-    server:
-      enabled: true
-      image:
-        repository: hashicorp/vault
-        tag: "1.15.2"
-      
-      serviceAccount:
-        create: true
-        name: vault-unseal
-      
-      # Use custom configuration
-      extraArgs: |
-        -config=/vault/userconfig/vault-unseal.hcl
-      
-      extraVolumes:
-        - type: configMap
-          name: vault-unseal-config
-          path: /vault/userconfig
-      
-      # Disable readiness probe during initialization
-      readinessProbe:
-        enabled: false
-      
-      # Use filesystem storage for simplicity
-      dataStorage:
-        enabled: true
-        size: 5Gi
-        storageClass: ""
-      
-      # Disable HA for single-node setup
-      ha:
-        enabled: false
-      
-      # Disable UI for security
-      ui:
-        enabled: false
+  project: default
+  source:
+    repoURL: https://charts.bitnami.com/bitnami
+    chart: vault
+    targetRevision: 0.27.0
+    helm:
+      values: |
+        global:
+          enabled: true
+          tlsDisable: true
+        
+        server:
+          enabled: true
+          image:
+            repository: hashicorp/vault
+            tag: "1.15.2"
+          
+          serviceAccount:
+            create: true
+            name: vault-unseal
+          
+          # Use custom configuration
+          extraArgs: |
+            -config=/vault/userconfig/vault-unseal.hcl
+          
+          extraVolumes:
+            - type: configMap
+              name: vault-unseal-config
+              path: /vault/userconfig
+          
+          # Disable readiness probe during initialization
+          readinessProbe:
+            enabled: false
+          
+          # Use filesystem storage for simplicity
+          dataStorage:
+            enabled: true
+            size: 5Gi
+            storageClass: ""
+          
+          # Disable HA for single-node setup
+          ha:
+            enabled: false
+          
+          # Disable UI for security
+          ui:
+            enabled: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: vault-unseal
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
