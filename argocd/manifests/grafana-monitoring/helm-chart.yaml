@@ -1,0 +1,95 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: grafana-k8s-monitoring
+  namespace: monitoring
+spec:
+  repo: https://grafana.github.io/helm-charts
+  chart: k8s-monitoring
+  version: "*"
+  targetNamespace: monitoring
+  valuesContent: |-
+    cluster:
+      name: my-cluster
+
+    destinations:
+      - name: grafana-cloud-metrics
+        type: prometheus
+        url: https://prometheus-prod-56-prod-us-east-2.grafana.net/api/prom/push
+        auth:
+          type: basic
+          username: "2600859"
+          passwordFrom:
+            secretKeyRef:
+              name: grafana-cloud-credentials
+              key: access-policy-token
+
+      - name: grafana-cloud-logs
+        type: loki
+        url: https://logs-prod-036.grafana.net/loki/api/v1/push
+        auth:
+          type: basic
+          username: "1296106"
+          passwordFrom:
+            secretKeyRef:
+              name: grafana-cloud-credentials
+              key: access-policy-token
+
+      - name: grafana-cloud-otlp-endpoint
+        type: otlp
+        url: https://otlp-gateway-prod-us-east-2.grafana.net/otlp
+        protocol: http
+        auth:
+          type: basic
+          username: "1338312"
+          passwordFrom:
+            secretKeyRef:
+              name: grafana-cloud-credentials
+              key: access-policy-token
+        metrics:
+          enabled: true
+        logs:
+          enabled: true
+        traces:
+          enabled: true
+
+      - name: grafana-cloud-profiles
+        type: pyroscope
+        url: https://profiles-prod-001.grafana.net:443
+        auth:
+          type: basic
+          username: "1338312"
+          passwordFrom:
+            secretKeyRef:
+              name: grafana-cloud-credentials
+              key: access-policy-token
+
+    clusterMetrics:
+      enabled: true
+      opencost:
+        enabled: true
+        metricsSource: grafana-cloud-metrics
+        opencost:
+          exporter:
+            defaultClusterId: my-cluster
+          prometheus:
+            existingSecretName: grafana-cloud-metrics-grafana-k8s-monitoring
+            external:
+              url: https://prometheus-prod-56-prod-us-east-2.grafana.net/api/prom
+      kepler:
+        enabled: true
+
+    annotationAutodiscovery:
+      enabled: true
+
+    prometheusOperatorObjects:
+      enabled: true
+
+    clusterEvents:
+      enabled: true
+
+    nodeLogs:
+      enabled: true
+
+    podLogs:
+      enabled: true

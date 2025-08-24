@@ -9,7 +9,11 @@ spec:
       repoURL: ssh://git@github.com/nullcap/infra-k3s.git
       revision: main
       directories:
-      - path: argocd/manifests/*            # one app per subfolder
+      - path: argocd/manifests/archivetw
+      - path: argocd/manifests/traefik-config
+      - path: argocd/manifests/cert-manager
+      - path: argocd/manifests/sealed-secrets
+      - path: argocd/manifests/grafana-monitoring
   template:
     metadata:
       name: '{{path.basename}}'
