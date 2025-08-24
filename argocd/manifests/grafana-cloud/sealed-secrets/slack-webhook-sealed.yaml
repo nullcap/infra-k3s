@@ -1,0 +1,15 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  creationTimestamp: null
+  name: slack-webhook
+  namespace: default
+spec:
+  encryptedData:
+    url: AgB1sbCwl6Tqrrk8KcAUlVZ+3JnFRgAD8/LQwt5vCgrR05MwHfl72HKNnXmnUtzHvGiCQxrTeGQh4d6idgWqFZqOqFmGndBkeQo4BrMl0PahEkfRqfzZXCCYr0aJTIFa8L2hp99B7Hvv2o6nx42sRU/ZLhaovYh/2loZeP9zPoZl4rowT9QH8ghPUg+DY6bcVoz1qEUQI3vxsyzKuF/9xItqhs7koVp07GcICcHG/2xk4poG2/Ib+QRg3tDtE1GI0XtAPpqXz/i06GHda1y742bnhD6csUYOjoadEsOKDhyQY5J+iZnVZUtImR1S88ZHMPlruEWXNIa35W0bArYHH6t69OAYlcRGmgJDWjyStR2BLjDIXl/O5ouu707qr5JEZ1c0TBxDPbb3uH2rpiCCjB8geOBX4zQiBDZ11ESsP2gU0tUD68fZ3+hf8WhEPIc5XW0xj6xKEzob7Vp+sJvYpAvHZC8c+iJFX862Oo0uAMURERgcAzdp71Pw4XVGn7Z22z+47r6wPwdE91cEhzKycnwD/EU8L4B6sXYxRkeUNda8QsQX7FH1B9lUc8+hya6Tk7Wj8K2iBnG7lz7o1l4AEgy8IeXQw5wBkXJ4ragBwIRlhvr/mKYamB1lhBXaGMI2juIXAE7NIsDI/09uBYrBXjvkv1ViTZmxlpUSZ8Z+VKxxEndzOdNDTmzkNXLKS61YdTyox+djSIUdz2IXXvX3hglvohbNyAqaq6RtEBFbHInPf7Mteg6zUv95fb69bMtY8DnRlUY/1om0m9qPv4TNJtoMStR2G/2nDKA2iZ/aADhIe8w=
+  template:
+    metadata:
+      creationTimestamp: null
+      name: slack-webhook
+      namespace: default
