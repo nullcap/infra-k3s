@@ -12,7 +12,7 @@ spec:
     helm:
       values: |
         global:
-          domain: argocd.local
+          domain: argocd.nullcap.net
         
         configs:
           cm:
@@ -23,7 +23,9 @@ spec:
             # Allow applications to be deployed in any namespace
             application.namespaces: "*"
           params:
-            # Disable TLS for local development
+            # Configure external URL to prevent redirect loops
+            server.url: https://argocd.nullcap.net:30443
+            # Disable TLS since we're using ingress
             server.insecure: true
             # Enable server-side diff
             server.enable.proxy.extension: true
@@ -32,10 +34,15 @@ spec:
           ingress:
             enabled: true
             annotations:
-              traefik.ingress.kubernetes.io/router.entrypoints: web
+              traefik.ingress.kubernetes.io/router.entrypoints: websecure
+              traefik.ingress.kubernetes.io/router.tls: "true"
             hosts:
-              - argocd.local
+              - argocd.nullcap.net
             ingressClassName: traefik
+            tls:
+              - secretName: argocd-server-tls
+                hosts:
+                  - argocd.nullcap.net
         
         # Enable the app-of-apps pattern
         applicationSet:
