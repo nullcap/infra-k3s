@@ -25,8 +25,8 @@ spec:
               username: "2600859"
               passwordFrom:
                 secretKeyRef:
-                  name: grafana-k8s-monitoring-secrets
-                  key: metrics_api
+                  name: grafana-cloud-credentials
+                  key: access-policy-token
 
           - name: grafana-cloud-logs
             type: loki
@@ -36,8 +36,8 @@ spec:
               username: "1296106"
               passwordFrom:
                 secretKeyRef:
-                  name: grafana-k8s-monitoring-secrets
-                  key: logs_api
+                  name: grafana-cloud-credentials
+                  key: access-policy-token
 
           - name: grafana-cloud-otlp-endpoint
             type: otlp
@@ -48,8 +48,8 @@ spec:
               username: "1338312"
               passwordFrom:
                 secretKeyRef:
-                  name: grafana-k8s-monitoring-secrets
-                  key: otlp_api
+                  name: grafana-cloud-credentials
+                  key: access-policy-token
             metrics:
               enabled: true
             logs:
@@ -65,8 +65,8 @@ spec:
               username: "1338312"
               passwordFrom:
                 secretKeyRef:
-                  name: grafana-k8s-monitoring-secrets
-                  key: profiles_api
+                  name: grafana-cloud-credentials
+                  key: access-policy-token
 
         clusterMetrics:
           enabled: true
@@ -121,85 +121,21 @@ spec:
         profiling:
           enabled: true
 
-        # Alloy configurations with proper secret references
+        # Disable alloy configurations for now as they don't support secretKeyRef
         alloy-metrics:
-          enabled: true
-          remoteConfig:
-            enabled: true
-            url: https://fleet-management-prod-008.grafana.net
-            auth:
-              type: basic
-              username: "1338312"
-              passwordFrom:
-                secretKeyRef:
-                  name: grafana-k8s-monitoring-secrets
-                  key: fm_api
+          enabled: false
 
         alloy-singleton:
-          enabled: true
-          remoteConfig:
-            enabled: true
-            url: https://fleet-management-prod-008.grafana.net
-            auth:
-              type: basic
-              username: "1338312"
-              passwordFrom:
-                secretKeyRef:
-                  name: grafana-k8s-monitoring-secrets
-                  key: fm_api
+          enabled: false
 
         alloy-logs:
-          enabled: true
-          remoteConfig:
-            enabled: true
-            url: https://fleet-management-prod-008.grafana.net
-            auth:
-              type: basic
-              username: "1338312"
-              passwordFrom:
-                secretKeyRef:
-                  name: grafana-k8s-monitoring-secrets
-                  key: fm_api
+          enabled: false
 
         alloy-receiver:
-          enabled: true
-          alloy:
-            extraPorts:
-              - name: otlp-grpc
-                port: 4317
-                targetPort: 4317
-                protocol: TCP
-              - name: otlp-http
-                port: 4318
-                targetPort: 4318
-                protocol: TCP
-              - name: zipkin
-                port: 9411
-                targetPort: 9411
-                protocol: TCP
-          remoteConfig:
-            enabled: true
-            url: https://fleet-management-prod-008.grafana.net
-            auth:
-              type: basic
-              username: "1338312"
-              passwordFrom:
-                secretKeyRef:
-                  name: grafana-k8s-monitoring-secrets
-                  key: fm_api
+          enabled: false
 
         alloy-profiles:
-          enabled: true
-          remoteConfig:
-            enabled: true
-            url: https://fleet-management-prod-008.grafana.net
-            auth:
-              type: basic
-              username: "1338312"
-              passwordFrom:
-                secretKeyRef:
-                  name: grafana-k8s-monitoring-secrets
-                  key: fm_api
+          enabled: false
   destination:
     namespace: default
     server: https://kubernetes.default.svc
