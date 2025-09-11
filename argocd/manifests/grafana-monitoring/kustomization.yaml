@@ -5,3 +5,5 @@ resources:
   - grafana-cloud-credentials-sealed.yaml
   - application.yaml
 
+namespace: monitoring
+
