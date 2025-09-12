@@ -9,4 +9,5 @@ namespace: argocd
 
 patchesStrategicMerge:
   - argocd-cm-patch.yaml
+  - appproject-default-patch.yaml
 
