@@ -20,20 +20,14 @@ spec:
             auth:
               type: basic
               username: "2600859"
-              passwordFrom:
-                secretKeyRef:
-                  name: grafana-cloud-credentials
-                  key: access-policy-token
+              passwordFrom: GCLOUD_RW_API_KEY
           - name: grafana-cloud-logs
             type: loki
             url: https://logs-prod-036.grafana.net/loki/api/v1/push
             auth:
               type: basic
               username: "1296106"
-              passwordFrom:
-                secretKeyRef:
-                  name: grafana-cloud-credentials
-                  key: access-policy-token
+              passwordFrom: GCLOUD_RW_API_KEY
           - name: grafana-cloud-otlp-endpoint
             type: otlp
             url: https://otlp-gateway-prod-us-east-2.grafana.net/otlp
@@ -41,10 +35,7 @@ spec:
             auth:
               type: basic
               username: "1338312"
-              passwordFrom:
-                secretKeyRef:
-                  name: grafana-cloud-credentials
-                  key: access-policy-token
+              passwordFrom: GCLOUD_RW_API_KEY
             metrics:
               enabled: true
             logs:
