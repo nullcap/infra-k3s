@@ -108,15 +108,7 @@ spec:
               - name: GCLOUD_FM_COLLECTOR_ID
                 value: grafana-k8s-monitoring-$(CLUSTER_NAME)-$(NAMESPACE)-$(POD_NAME)
           remoteConfig:
-            enabled: true
-            url: https://fleet-management-prod-008.grafana.net
-            auth:
-              type: basic
-              username: "1338312"
-              passwordFrom:
-                secretKeyRef:
-                  name: grafana-cloud-credentials
-                  key: access-policy-token
+            enabled: false
         alloy-singleton:
           enabled: true
           alloy:
@@ -139,15 +131,7 @@ spec:
               - name: GCLOUD_FM_COLLECTOR_ID
                 value: grafana-k8s-monitoring-$(CLUSTER_NAME)-$(NAMESPACE)-$(POD_NAME)
             remoteConfig:
-              enabled: true
-              url: https://fleet-management-prod-008.grafana.net
-              auth:
-                type: basic
-                username: "1338312"
-                passwordFrom:
-                  secretKeyRef:
-                    name: grafana-cloud-credentials
-                    key: access-policy-token
+              enabled: false
         alloy-logs:
           enabled: true
           alloy:
@@ -174,15 +158,7 @@ spec:
               - name: GCLOUD_FM_COLLECTOR_ID
                 value: grafana-k8s-monitoring-$(CLUSTER_NAME)-$(NAMESPACE)-alloy-logs-$(NODE_NAME)
             remoteConfig:
-              enabled: true
-              url: https://fleet-management-prod-008.grafana.net
-              auth:
-                type: basic
-                username: "1338312"
-                passwordFrom:
-                  secretKeyRef:
-                    name: grafana-cloud-credentials
-                    key: access-policy-token
+              enabled: false
         alloy-receiver:
           enabled: true
           alloy:
@@ -222,15 +198,7 @@ spec:
               - name: GCLOUD_FM_COLLECTOR_ID
                 value: grafana-k8s-monitoring-$(CLUSTER_NAME)-$(NAMESPACE)-alloy-receiver-$(NODE_NAME)
             remoteConfig:
-              enabled: true
-              url: https://fleet-management-prod-008.grafana.net
-              auth:
-                type: basic
-                username: "1338312"
-                passwordFrom:
-                  secretKeyRef:
-                    name: grafana-cloud-credentials
-                    key: access-policy-token
+              enabled: false
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
