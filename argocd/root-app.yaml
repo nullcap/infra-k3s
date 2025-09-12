@@ -14,6 +14,7 @@ spec:
       - path: argocd/manifests/cert-manager
       - path: argocd/manifests/sealed-secrets
       - path: argocd/manifests/grafana-monitoring
+      - path: argocd/manifests/argocd-config
   template:
     metadata:
       name: '{{path.basename}}'

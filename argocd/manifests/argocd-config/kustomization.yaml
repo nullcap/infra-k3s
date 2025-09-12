@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../helm-repositories/grafana.yaml
+  - monitoring-namespace.yaml
+  - argocd-controller-rbac-monitoring.yaml
+  - argocd-cm-application-namespaces.yaml
+
+namespace: argocd
+
