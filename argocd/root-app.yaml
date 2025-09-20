@@ -15,6 +15,7 @@ spec:
       - path: argocd/manifests/argocd-config
       - path: argocd/manifests/uptime-kuma
       - path: argocd/manifests/argocd-ingress
+      - path: argocd/manifests/nebula-sync
   template:
     metadata:
       name: '{{path.basename}}'

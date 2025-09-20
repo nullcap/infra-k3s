@@ -1,0 +1,16 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  creationTimestamp: null
+  name: nebula-sync-secrets
+  namespace: nebula-sync
+spec:
+  encryptedData:
+    primary: AgByKsZjGsdfc+tjtydxZDKsMSQMR68b0R6r0nDAbiVttcwgN7IRtgWWecsuORm/xGb5oBVz4lrLsXtkmYbCMwPReM6i5S+xs4jsq+qpYadkTzaHZF19Z2CoB4afAyNfnm/lCjrnNk/cw/P++iuRBebpmSoSUwj6uwNsegHxzEzmYWJ30F4ks1kBd9JhvYD9TF5XgjwLjAc+uzid4rR/63HxsU0/Sj3Ai5q7awcwU70vLFEGBDB6okOfYALdRZKAT3AyKA1cLXvctL7syicXo+H/YYBIkhK45nKGmU9V7hJDPcAJcfb+TlBnmWWrlZN988DBbBJl5WeDrD3YsZgEvHlIwd5Cr4Q6zMg80luBT9poBxGAJXeRR+hgrnEDroDDRNflHvKmaHV+nWqaw9okn/hxq4xmNteolN7jeHwj7b4MYv72G1OcSLx9BJA3QC0qWpmG9q7LgQl4e/G3l9PQo6XUFMSm4lQ06VPXadOkuR2YlR/sA0mpsVf8ZK9PyLMxtUhnXfknh5JiSHgk25Vpi9mgJpsLyuIithWnkbRYGOc2mySfwCIhyro48MEHtv8AAybTvUcCPBHXOmCO+KJB8bJdgA5YjVo9Ho6y6nBK//5fonOii5cysfDl0cvkqzkMp2/1/SAsAcKJrGLmz3T5qnxGbgsf5qtArHPNa42FHLVs3uop7W4TlfZEJXrCXUvcT+MZb38cub5TuLVj/+htt7Di7tnVLddvpS3uDC0rzg==
+    replicas: AgBkefT9iRnKWNMJ/7onW8t1MCu+IGa40Fz5LuUMYXh3x6n19hExHjwaT4wj28/zquyI+TAsNyskpYtlA/YwEmcYLTxI4k/xUPKqRR3qpgk6g5VYUhNYK+XyVVRzYb4CB1nmmiw1JR1s1YwmSRVYIMr03B+3VH+3K1wrwIf44drvsbWhN3aJ8RvK+p0Te7J9qmpDCUjGNTnNHsoSemWqRETWCHxXPN0Sf4K5GfnoW9YPbCJ6/qnxfBNN15aeiIJjbBVy9o+PXMnLysncQN2dc+sNsNnPJnFsAQ5m94HDThdU6u5HZVGdN7/0F3+w/JQ0SRaI14OIAU698DMWGXDDgO0VgUvPMP+k4AvrlWCpj39Nbj4LJ4edHxruIxf42pgr7K3Gu/8oMw6OHvZWf3PF+uAVgAraALmqnFJgD/89nxwtrWiUCllnOvd7dGqnJQ+FRR8t//K6rPXNVSk6giKJ/k7EIeXC7TKk9yrjDpycuA3nm7370sfCFYcWSGUTPd2FxGfwYqLrfTlVNJfcxm1AOJtal8JtQgN/b/O+URhaqR3V1jtQ35/CT1ylluLCYS7VPOHB0zDP82p+NfWFp4N9BCijitKnArxuJYBrS7pNMMdf7/yfGvNVTk2Sdl9P5cH5kb/0UHNg7BYASbFKUMQBtHHbxl8e/5G+kACAf7rmya7+PHnpz+9OI0vhuO8PeSy/ixar1kPbzfMeAGkagM0Xwe0MyEW4MNu6iUSj42A3Bcq8hw+Rb8mz+EyltsSh+wSQWvVzCFr5h8D0dtkZww==
+  template:
+    metadata:
+      creationTimestamp: null
+      name: nebula-sync-secrets
+      namespace: nebula-sync
