@@ -15,6 +15,7 @@ spec:
       - path: argocd/manifests/sealed-secrets
       - path: argocd/manifests/grafana-monitoring
       - path: argocd/manifests/argocd-config
+      - path: argocd/manifests/uptime-kuma
   template:
     metadata:
       name: '{{path.basename}}'
