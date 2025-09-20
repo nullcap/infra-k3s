@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - monitoring-namespace.yaml
   - argocd-controller-rbac-monitoring.yaml
+  - argocd-server-ingress.yaml
 
 namespace: argocd
 
