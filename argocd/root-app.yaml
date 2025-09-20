@@ -15,6 +15,7 @@ spec:
       - path: argocd/manifests/grafana-monitoring
       - path: argocd/manifests/argocd-config
       - path: argocd/manifests/uptime-kuma
+      - path: argocd/manifests/argocd-ingress
   template:
     metadata:
       name: '{{path.basename}}'
