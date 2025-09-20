@@ -3,14 +3,8 @@ kind: Ingress
 metadata:
   name: uptime-kuma
   namespace: uptime-kuma
-  annotations:
-    kubernetes.io/ingress.class: traefik
-    cert-manager.io/cluster-issuer: letsencrypt-cloudflare
 spec:
-  tls:
-    - hosts:
-        - utk.nullcap.net
-      secretName: utk-nullcap-net-tls
+  ingressClassName: traefik
   rules:
     - host: utk.nullcap.net
       http:
