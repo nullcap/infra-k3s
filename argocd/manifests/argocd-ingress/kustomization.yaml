@@ -3,5 +3,6 @@ kind: Kustomization
 
 resources:
   - ingress.yaml
+  - argocd-cmd-params-cm.yaml
 
 
