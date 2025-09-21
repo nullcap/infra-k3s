@@ -5,10 +5,10 @@ resources:
   - monitoring-namespace.yaml
   - argocd-controller-rbac-monitoring.yaml
   - argocd-server-ingress.yaml
+  - github-ssh-secret-sealed.yaml
 
 namespace: argocd
 
-patchesStrategicMerge:
-  - argocd-cm-patch.yaml
-  - appproject-default-patch.yaml
+# Note: ConfigMap and AppProject patches are applied directly to existing resources
+# in the cluster rather than through kustomization since they already exist
 
