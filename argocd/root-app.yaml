@@ -12,7 +12,6 @@ spec:
       - path: argocd/manifests/archivetw
       - path: argocd/manifests/traefik-config
       - path: argocd/manifests/sealed-secrets
-      - path: argocd/manifests/argocd-config
       - path: argocd/manifests/uptime-kuma
       - path: argocd/manifests/nebula-sync
   template:

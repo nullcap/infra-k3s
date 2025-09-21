@@ -3,8 +3,13 @@ kind: Ingress
 metadata:
   name: argocd-server
   namespace: argocd
+  annotations:
+    traefik.ingress.kubernetes.io/router.tls: "true"
 spec:
   ingressClassName: traefik
+  tls:
+  - hosts:
+    - argocd.nullcap.net
   rules:
     - host: argocd.nullcap.net
       http:
@@ -15,6 +20,6 @@ spec:
               service:
                 name: argocd-server
                 port:
-                  number: 80
+                  number: 443
 
 
