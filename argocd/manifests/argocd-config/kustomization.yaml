@@ -2,8 +2,6 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - monitoring-namespace.yaml
-  - argocd-controller-rbac-monitoring.yaml
   - argocd-server-ingress.yaml
   - argocd-cmd-params-cm.yaml
   - github-ssh-secret-sealed.yaml

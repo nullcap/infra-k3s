@@ -6,7 +6,6 @@ metadata:
 data:
   application.namespaces: |
     - argocd
-    - monitoring
   repositories: |
     - name: grafana
       type: helm
